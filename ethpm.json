@@ -1,0 +1,13 @@
+{
+  "package_name": "ImmersiveToken",
+  "version": "0.0.1",
+  "description": "Ethereum ImmersiveOS Token Sale Dapp",
+  "authors": [
+    "Core Dev Team <devteam@immersiveos.com>"
+  ],
+  "keywords": [
+    "immersiveOS",
+    "immersiveToken"
+  ],
+  "license": "MIT"
+}
