@@ -1,6 +1,6 @@
 import BigNumber from 'bignumber.js';
 import {TxContext, TxState} from './txcontext';
-import {BlockchainActions} from '../models/blockchain';
+import {BlockchainActions} from '../redux/models/blockchain';
 import {BlockchainError, BlockInfo} from './blockinfo';
 const Web3 = require('web3');
 const log = console.log;

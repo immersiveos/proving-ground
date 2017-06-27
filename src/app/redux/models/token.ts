@@ -1,5 +1,5 @@
 import BigNumber from 'bignumber.js';
-import {TokenInfo} from '../blockchain/immersivetoken';
+import {TokenInfo} from '../../blockchain/immersivetoken';
 
 export type SET_TOKEN = 'token/SET_TOKEN';
 export const SET_TOKEN: SET_TOKEN = 'token/SET_TOKEN';

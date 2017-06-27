@@ -1,8 +1,8 @@
 import { combineReducers } from 'redux';
 import { routerReducer } from 'react-router-redux';
 import { IStore } from './IStore';
-import {blockchainReducer} from './modules/blockchain/index';
-import {immersiveReducer} from './modules/immersive/index';
+import {blockchainReducer} from './reducers/blockchain/index';
+import {immersiveReducer} from './reducers/immersive/index';
 
 const { reducer } = require('redux-connect');
 

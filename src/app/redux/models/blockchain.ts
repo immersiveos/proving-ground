@@ -1,5 +1,5 @@
-import {Blockchain} from '../blockchain/blockchain';
-import {BlockchainError, BlockInfo} from '../blockchain/blockinfo';
+import {Blockchain} from '../../blockchain/blockchain';
+import {BlockchainError, BlockInfo} from '../../blockchain/blockinfo';
 
 export type SET_BLOCK_CHAIN = 'blockchain/SET_BLOCK_CHAIN';
 export const SET_BLOCK_CHAIN: SET_BLOCK_CHAIN = 'blockchain/SET_BLOCK_CHAIN';

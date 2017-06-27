@@ -1,7 +1,7 @@
 import {
   IBlockchainAction,
   SET_BLOCK_CHAIN, SET_CONNECTED, SET_ERROR, SET_LAST_BLOCK, SET_LAST_UPDATED, SET_NETWORK_ID, SET_USER
-} from '../../../models/blockchain';
+} from '../../models/blockchain';
 import {Blockchain} from '../../../blockchain/blockchain';
 import {BlockchainError, BlockInfo} from 'blockchain/blockinfo';
 

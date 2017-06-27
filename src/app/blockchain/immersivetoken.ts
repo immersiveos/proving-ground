@@ -5,7 +5,7 @@ import {Blockchain} from './blockchain';
 import {TxCallback, TxContext} from './txcontext';
 
 import {TimeUtils} from 'blockchain/utils';
-import {ImmersiveTokenActions} from '../models/token';
+import {ImmersiveTokenActions} from '../redux/models/token';
 
 const appConfig = require('../../../config/main');
 const contracts = require('truffle-contract');
