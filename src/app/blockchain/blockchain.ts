@@ -194,7 +194,17 @@ export class Blockchain {
   private static ABRG_BLOCK_TIME_MSECS = 17000;
   private static NETWORK_STATUS_INTERVAL = 5000;
 
-  public estimatedBlockDate(blockNumber:BigNumber):Date {
+  public estimatedBlockDate(blockNumber:number):Date {
+    if (this.lastBlock == null) {
+      log(`Warning: no last block yet`);
+      return null;
+    }
+    const diff = blockNumber - this.lastBlock.blockNumber;
+    const msecs = diff * Blockchain.ABRG_BLOCK_TIME_MSECS;
+    return new Date (this.lastBlock.date.getTime() + msecs);
+  }
+
+  public estimatedBigNumberBlockDate(blockNumber:BigNumber):Date {
     if (this.lastBlock == null) {
       log(`Warning: no last block yet`);
       return null;
@@ -274,7 +284,11 @@ export class Blockchain {
     });
   }
 
-  public weiString(amount:BigNumber): string {
+  public getEthAmountString(amount:BigNumber): string {
+    return (`${this.web3.fromWei(amount)} eth`);
+  }
+
+  public getWeiString(amount:BigNumber): string {
     return (`${amount.toFixed(0)} wei (${this.web3.fromWei(amount)} eth)`);
   }
 

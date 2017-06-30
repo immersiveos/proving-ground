@@ -84,7 +84,7 @@ export class ImmersiveToken {
     const owner = await this.contract.owner();
     const fundingStartBlock = await this.contract.fundingStartBlock();
     const fundingEndBlock = await this.contract.fundingEndBlock();
-    const fundingGaol = await this.contract.fundingGoal;
+    const fundingGaol = await this.contract.fundingGoal();
     const funded = await this.contract.fundingSuccessful();
     const symbol = await this.contract.symbol();
     const name = await this.contract.name();

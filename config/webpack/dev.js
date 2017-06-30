@@ -71,15 +71,15 @@ var config = {
 
       {
         test: /\.eot(\?.*)?$/,
-        loader: 'file-loader?name=fonts/[hash].[ext]'
+        loader: 'file-loader?name=fonts/[name].[ext]'
       },
       {
         test: /\.(woff|woff2)(\?.*)?$/,
-        loader: 'file-loader?name=fonts/[hash].[ext]'
+        loader: 'file-loader?name=fonts/[name].[ext]'
       },
       {
         test: /\.ttf(\?.*)?$/,
-        loader: 'url-loader?limit=10000&mimetype=application/octet-stream&name=fonts/[hash].[ext]'
+        loader: 'url-loader?limit=10000&mimetype=application/octet-stream&name=fonts/[name].[ext]'
       },
       {
         test: /\.svg(\?.*)?$/,
@@ -142,6 +142,6 @@ const createIfDoesntExist = dest => {
 
 createIfDoesntExist('./build');
 createIfDoesntExist('./build/public');
-copySync('./src/favicon.png', './build/public/favicon.png', true);
+copySync('./src/favicon.ico', './build/public/favicon.ico', true);
 
 module.exports = config;

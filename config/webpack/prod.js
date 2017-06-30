@@ -79,15 +79,19 @@ var config = {
       },
       {
         test: /\.eot(\?.*)?$/,
-        loader: 'file-loader?name=fonts/[hash].[ext]'
+        loader: 'file-loader?name=fonts/[name].[ext]'
       },
       {
-        test: /\.(woff|woff2)(\?.*)?$/,
-        loader: 'file-loader?name=fonts/[hash].[ext]'
+        test: /\.(woff)(\?.*)?$/,
+        loader: 'file-loader?mimetype=application/font-woff&name=fonts/[name].[ext]'
+      },
+      {
+        test: /\.(woff2)(\?.*)?$/,
+        loader: 'file-loader?mimetype=application/font-woff2&name=fonts/[name].[ext]'
       },
       {
         test: /\.ttf(\?.*)?$/,
-        loader: 'url-loader?limit=10000&mimetype=application/octet-stream&name=fonts/[hash].[ext]'
+        loader: 'url-loader?limit=10000&mimetype=application/octet-stream&name=[hash].[ext]'
       },
       {
         test: /\.svg(\?.*)?$/,

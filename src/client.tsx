@@ -12,6 +12,8 @@ import { configureStore } from './app/redux/store';
 import 'isomorphic-fetch';
 import routes from './app/routes';
 
+require("font-awesome-webpack");
+
 const store = configureStore(
   browserHistory,
   window.__INITIAL_STATE__,
@@ -22,6 +24,7 @@ const store = configureStore(
 
 const history = syncHistoryWithStore(browserHistory, store);
 const connectedCmp = (props) => <ReduxAsyncConnect {...props} />;
+
 
 ReactDOM.render(
   <Provider store={store} key="provider">
