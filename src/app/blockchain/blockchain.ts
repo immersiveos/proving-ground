@@ -14,8 +14,9 @@ export class Blockchain {
     await (global as any).store.dispatch(BlockchainActions.setBlockchain(Blockchain.sharedInstance));
   }
 
-  private web3;
   public static sharedInstance;
+
+  private web3;
   private userAccount;
   private networkId:number;
   private lastError?:BlockchainError;
@@ -23,31 +24,35 @@ export class Blockchain {
   private isConnected?: boolean;
   private trackedTransactions = new Map<string,TxContext>();
 
-  constructor() {
-    try {
+  private blockTimer;
+  private userTimer;
 
+  private static ABRG_BLOCK_TIME_MSECS = 17000;
+  private static NETWORK_STATUS_INTERVAL = 5000;
+
+  constructor() {
+
+    try {
       // use injected web3 or create a new one listening to localhost if
       // it wasn't provided by the browser (mist/metamask)
-      const providedWeb3 = (<any>global).web3 || null;
+      const providedWeb3 = (global as any).web3 || null;
 
       // Checking if Web3 has been injected by the browser (Mist/MetaMask)
       if (providedWeb3 !== null) {
+
         // Use Mist/MetaMask's provider
         this.web3 = new Web3(providedWeb3.currentProvider);
         log(`Using browser provided web3`);
       } else {
         log(`No browser provided web3 - trying local rpc...`);
-
-        // fallback - use your fallback strategy (local node / hosted node + in-dapp id mgmt / fail)
+        // fallback - use fallback strategy (local node / hosted node + in-dapp id mgmt / fail)
         this.web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8545'));
-
       }
 
       this.startProcessing();
 
     } catch (exception) {
       log(`Failed to init web3: ${exception}`);
-
       this.setError(new BlockchainError("Failed to access Ethereum", "Please check your browser web3 provider"));
     }
   }
@@ -62,44 +67,40 @@ export class Blockchain {
 
   // if txContext.confirmations == 0 then callback with mined will be called
   // as soon as the transaction was mined, otherwise callback with confirmed will be sent after
-  // the number of conifmrations requestged by the caller (>=1)
+  // the number of confirmations requested by the caller (>=1)
   public async processTransaction(txContext: TxContext) {
 
     txContext.request.then((res) => {
 
-      // todo: validate res.receipt != null
+      if (res == null || res.receipt == null) {
+        txContext.state = TxState.Error;
+        txContext.error = 'Transaction failed - no receipt';
+        txContext.performCallback();
+        return;
+      }
 
       txContext.result = res;
       txContext.state = TxState.Mined;
 
-      // result.tx => transaction hash, string
-      // result.logs => array of trigger events (1 item in this case)
-      // result.receipt => receipt object
-
-      // call the call back for the minted state
+      // call the callback for the minted state
       txContext.performCallback();
 
       if (txContext.confirmations > 0) {
         // start tracking the transaction on the blockchain
-        // if more than 1 confirmation time requested
+        // if more than 1 confirmationa  requested
         // res.rx === res.receipt.transactionHash
         this.trackedTransactions.set(res.tx, txContext);
-
       }
 
     }).catch((err) => { // error (or timeout after 120 truffle-set)
       txContext.state = TxState.Error;
       txContext.error = err.message;
       txContext.performCallback();
-
     });
 
-    // listen to transaction events to catch removed event
+    // todo: listen to transaction events to catch transaction removed event
     // submit the transaction and log transaction hash
   }
-
-  private blockTimer;
-  private userTimer;
 
   private async updateNetworkStatus () {
 
@@ -150,13 +151,13 @@ export class Blockchain {
 
         if (err) {
           log(`Failed to get user account: ${err}`);
-          (window as any).store.dispatch(BlockchainActions.setUser(null));
+          (global as any).store.dispatch(BlockchainActions.setUser(null));
           return;
         }
 
         if (res.length == 0) {
           log(`No web3 accounts found`);
-          (window as any).store.dispatch(BlockchainActions.setUser(null));
+          (global as any).store.dispatch(BlockchainActions.setUser(null));
         }
 
         if (res[0] != this.userAccount) {
@@ -191,8 +192,6 @@ export class Blockchain {
     //const state = store.getState();
   }
 
-  private static ABRG_BLOCK_TIME_MSECS = 17000;
-  private static NETWORK_STATUS_INTERVAL = 5000;
 
   public estimatedBlockDate(blockNumber:number):Date {
     if (this.lastBlock == null) {
@@ -232,12 +231,7 @@ export class Blockchain {
 
       if (this.lastBlock != null && block.hash === this.lastBlock.blockHash) {
         log(`Current block ${block.number} hash: ${block.hash}. Last block ${this.lastBlock.blockNumber} hash: ${this.lastBlock.blockHash}`);
-        log (`already processed this block. mining...`);
-
-        //if (this.networkId == 5) {
-        //  this.mineBlocks(1);
-        //}
-
+        log (`already processed this block.`);
         return;
       }
 
@@ -251,31 +245,30 @@ export class Blockchain {
 
         if (confirms >= context.confirmations) {
 
-          // try getting a receipt for the transaction from the current block chain
+          // try getting a receipt for the transaction from the current blockchain
 
           this.web3.eth.getTransactionReceipt(context.result.tx, (error, receipt) => {
+
             if (error || receipt == null) {
               if (error) context.error = error;
               context.state = TxState.Error;
               context.performCallback();
-
               this.trackedTransactions.delete(key);
+
             } else {
 
               if (receipt.gasUsed >= context.result.gas) {
                 // ran out of gas or contract threw an exception and used all the provided gas
-                // note edge case when transaction cost the exact amount of gas provided ether open issue
+                // note edge case when transaction cost the exact amount of gas provided - ether open issue
                 context.state = TxState.OutOfGas;
-                context.performCallback();
-
                 this.trackedTransactions.delete(key);
+                context.performCallback();
                 return;
               }
 
               context.state = TxState.Confirmed;
-              context.performCallback();
-
               this.trackedTransactions.delete(key);
+              context.performCallback();
             }
 
           });
@@ -291,49 +284,6 @@ export class Blockchain {
   public getWeiString(amount:BigNumber): string {
     return (`${amount.toFixed(0)} wei (${this.web3.fromWei(amount)} eth)`);
   }
-
-  // only works when using testnet
-  public async mineBlocks(blocks) {
-    for (let i = 0; i < blocks; i++) {
-      const mine = new Promise((resolve) => {
-        this.web3.currentProvider.sendAsync({
-          jsonrpc: '2.0',
-          method: 'evm_mine',
-          id: new Date().getTime(),
-        }, (result) => { resolve(result);})
-      });
-      await mine;
-    }
-  }
-
-  /*
-  public isConnected() : boolean {
-    return this.web3.isConnected();
-  }
-
-  public logBlock() { // todo: use lastBlock
-    log(`Current block: ${this.web3.eth.blockNumber}`);
-  }
-
-  public static logKeyValue(key: string, value: any) {
-    log(`${key} : ${value}`);
-  }
-
-
-
-
-
-  public static logEvents(tx) {
-    for (let i = 0; i < tx.logs.length; i++) {
-      const l = tx.logs[i];
-      log(l.event + ':');
-      log(l.args);
-    }
-  }
-
-  public static logGas(tx) {
-    log(`Gas used: ${tx.receipt.gasUsed}`);
-  }*/
 
 }
 

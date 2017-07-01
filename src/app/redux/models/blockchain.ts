@@ -10,7 +10,7 @@ export const SET_USER: SET_USER = 'blockchain/SET_USER';
 export type SetUserAction = { type: SET_USER, userAccount?:string };
 
 export type SET_CONNECTED = 'blockchain/SET_CONNECTED';
-export const SET_CONNECTED: SET_CONNECTED = 'blockchain/SET_CONNECTED';
+export  const SET_CONNECTED: SET_CONNECTED = 'blockchain/SET_CONNECTED';
 export type SetConnectedAction = { type: SET_CONNECTED, connected:boolean };
 
 export type SET_NETWORK_ID = 'blockchain/SET_NETWORK_ID';

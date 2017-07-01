@@ -23,10 +23,8 @@ interface IProps {
   connected: boolean;
   lastError?: BlockchainError;
   updated?: Date;
-
   token?: TokenInfo;
   tokenError? : string;
-
 }
 
 interface IState {
@@ -131,8 +129,7 @@ class Home extends React.Component<IProps, IState> {
             <ListGroupItem>Address: <a href={contractUrl}
                                        target="_blank">{BlockchainUtils.shortAddressFormat(token.address)}</a></ListGroupItem>
 
-            <ListGroupItem>{endedDisp} <TimeAgo date={endDate}/>
-              (Block {token.fundingEndBlock.toString()})</ListGroupItem>
+            <ListGroupItem>{endedDisp} <TimeAgo date={endDate}/>&nbps;(Block {token.fundingEndBlock.toString()})</ListGroupItem>
 
 
             { successful ?
