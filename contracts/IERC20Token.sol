@@ -3,7 +3,10 @@ pragma solidity ^0.4.11;
 /*
     ERC20 Standard Token interface
 */
+
+// todo: make this a proper solidity 0.4.12 interface
 contract IERC20Token {
+  // these functions aren't abstract since the compiler emits automatically generated getter functions as external
   function name() public constant returns (string name) { name; }
   function symbol() public constant returns (string symbol) { symbol; }
   function decimals() public constant returns (uint8 decimals) { decimals; }

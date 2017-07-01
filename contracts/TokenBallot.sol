@@ -1,6 +1,7 @@
 pragma solidity ^0.4.11;
 
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
+
 import "./IERC20Token.sol";
 import "./BallotProposal.sol";
 

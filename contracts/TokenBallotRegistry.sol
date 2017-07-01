@@ -23,4 +23,8 @@ contract TokenBallotsRegistry {
 
   event BallotRegisteredEvent(address indexed token, address ballot);
 
+  // array iteration helper
+  function numberOfBallots() external constant returns (uint256) {
+    return ballotsArray.length;
+  }
 }
