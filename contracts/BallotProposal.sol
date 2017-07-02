@@ -23,4 +23,14 @@ contract BallotProposal {
 
   event VoteEvent(address voter);
 
+  function undoVote(address voter) external {
+
+    // only the ballot contract code may initiate a vote for the proposal
+    assert (msg.sender == ballot);
+
+    votes[voter] = address(0);
+    UndoVoteEvent(voter);
+  }
+
+  event UndoVoteEvent(address vorter);
 }

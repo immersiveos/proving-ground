@@ -68,4 +68,18 @@ contract TokenBallot is Ownable {
 
   event VoteEvent(address indexed proposal, address voter);
 
+
+  function undoVote(address _proposal) external onlyIfAceptingVotes {
+
+    // only token holder may unvote
+    assert (token.balanceOf(msg.sender) > 0);
+
+    var proposal = proposalsMap[_proposal];
+    proposal.undoVote(msg.sender);
+
+    UndoVoteEvent(proposal, msg.sender);
+  }
+
+  event UndoVoteEvent(address indexed proposal, address voter);
+
 }

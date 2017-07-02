@@ -22,10 +22,6 @@ const createIfDoesntExist = dest => {
 
 module.exports = {
   build: (options, callback) => {
-    // working_directory: root location of the project
-    // contracts_directory: root directory of .sol files
-    // destination_directory: directory where truffle expects the built assets (important for `truffle serve`)
-
     // copy truffle compiled contracts json to the web proj source directory so they can be used by truffle-contract
     const srcDir = options.destination_directory + '/contracts/';
     const dstDir = './src/contracts/';
@@ -40,7 +36,9 @@ module.exports = {
   rpc: {
     host: 'localhost',
     port: 8545,
-    gas: 4000000
+    gas: 4000000,
+    network_id: 5,
+
   },
   migrations_directory: './migrations',
   networks: {
