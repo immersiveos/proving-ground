@@ -1,6 +1,6 @@
 FROM mhart/alpine-node:latest
 
-MAINTAINER ImmersiveOS
+MAINTAINER AvivEyal <aviveyal07@gmail.com>
 
 WORKDIR /app
 ADD . .

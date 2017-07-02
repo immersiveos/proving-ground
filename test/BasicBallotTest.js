@@ -18,7 +18,6 @@ const AddressesList = artifacts.require("./AddressesList.sol");
 // todo: take this from truffle config
 web3.setProvider(new web3.providers.HttpProvider('http://localhost:8545'));
 
-
 contract('Ballots', function(accounts) {
 
   it('Basic test', async () => {

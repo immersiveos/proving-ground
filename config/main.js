@@ -13,8 +13,8 @@ const config = {
   // This part goes to React-Helmet for Head of our HTML
   app: {
     head: {
-      title: 'ImmersiveToken Dapp',
-      titleTemplate: 'ImmersiveToken - %s',
+      title: 'TokenVote Dapp',
+      titleTemplate: 'TokenVote - %s',
       meta: [
         { charset: 'utf-8' },
         { 'http-equiv': 'x-ua-compatible', content: 'ie=edge' },

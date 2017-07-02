@@ -20,7 +20,7 @@ Active development - not ready for prime time yet
 
 ## License
 
-Copyright 2017 Aviv Eyal
+Copyright 2017 Aviv Eyal <aviveyal07@gmail.com>
 
 This work is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License.
 

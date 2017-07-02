@@ -44,9 +44,6 @@ module.exports = async (deployer, network, accounts) => {
 
     log (`>>>> Deployed ImmersiveToken to address: ${token.address}`);
 
-
-
-
   } else if (network === 'live') {
     log("todo: livenet deployment");
   } else {
