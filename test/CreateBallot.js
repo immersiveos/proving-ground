@@ -134,13 +134,10 @@ contract('Ballots', function(accounts) {
     // key - proposal address, value - total token voted (bigNumber)
     const votingResults = new Map();
     const zero = new BigNumber(0);
-
     let totalTokenVoted = zero;
 
     for (let [proposal, voters] of proposalVotersMap) {
-
       votingResults.set(proposal, zero);
-
       for (let [voterAddress, balance] of voters) {
         const newBalance = votingResults.get(proposal).add(balance);
         votingResults.set(proposal, newBalance);
@@ -151,7 +148,12 @@ contract('Ballots', function(accounts) {
     const totalTokenSupply = await token.totalSupply.call();
 
     // output final results
-    log (`Token voted: ${weiString(totalTokenVoted)} out of total supply of ${weiString(totalTokenSupply)}`);
+    log (`Total token voted: ${weiString(totalTokenVoted)} out of total supply of ${weiString(totalTokenSupply)}`);
+
+    if (!totalTokenSupply.isZero()) {
+      const ratio = totalTokenVoted.div(totalTokenSupply).mul(100);
+      log(`Ratio of token voted: ${ratio.toFixed(0)}%`);
+    }
 
     let totalValidVoters = 0;
 
