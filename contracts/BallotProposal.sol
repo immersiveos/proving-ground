@@ -17,10 +17,10 @@ contract BallotProposal {
 
   // final results - only valid if finalized is true
   uint256  public finalVoters;
-  uint256  public finalTokenVoted;
+  uint256  public finalVotedTokens;
 
   // at time of total token supply at finalization time
-  uint256  public finalRatioOfToken;
+  uint256  public finalAllVotedTokens;
 
   modifier onlyBallotCallable() {
     assert(msg.sender == address(ballot));
@@ -54,19 +54,19 @@ contract BallotProposal {
 
   function finalizeResults (
     uint256 _voters,
-    uint256 _votingToken,
-    uint256 _ratioOfToken
+    uint256 _votedTokens,
+    uint256 _allVotedtokens
   ) external onlyBallotCallable onlyIfNotFinalized {
 
     finalized = true;
 
     finalVoters = _voters;
-    finalTokenVoted = _votingToken;
-    finalRatioOfToken = _ratioOfToken;
+    finalVotedTokens = _votedTokens;
+    finalAllVotedTokens = _allVotedtokens;
 
-    FinalResultsEvent(_voters,_votingToken,_ratioOfToken);
+    FinalResultsEvent(_voters, _votedTokens, _allVotedtokens);
   }
-  event FinalResultsEvent(uint256 voters, uint256 votingToken, uint256 ratioOfToken);
+  event FinalResultsEvent(uint256 voters, uint256 votedTokens, uint256 allVotedTokens);
 
   event VoteEvent(address voter);
 

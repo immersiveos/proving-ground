@@ -63,23 +63,23 @@ contract TokenBallot is Ownable {
     return proposalsArray.length;
   }
 
-  function finalizeProposalResult (
+  function finalizeProposal (
     BallotProposal _proposal,
     uint256 _voters,
-    uint256 _votingToken,
-    uint256 _ratioOfToken) external onlyOwner onlyAfterVotingEnded {
+    uint256 _votedTokens,
+    uint256 _allVotedTokens) external onlyOwner onlyAfterVotingEnded {
 
     var proposal = proposalsMap[_proposal];
 
     assert(proposal != address(0));
     assert(!proposal.finalized());
 
-    proposal.finalizeResults(_voters,_votingToken,_ratioOfToken);
+    proposal.finalizeResults(_voters,_votedTokens,_allVotedTokens);
 
-    ProposalFinalizedEvent(proposal, _voters, _votingToken, _ratioOfToken);
+    ProposalFinalizedEvent(proposal, _voters, _votedTokens, _allVotedTokens);
   }
 
-  event ProposalFinalizedEvent(address indexed proposal, uint256 voters, uint256 votingToken, uint256 ratioOfToken);
+  event ProposalFinalizedEvent(address indexed proposal, uint256 voters, uint256 votedTokens, uint256 allVotedTokens);
 
   function vote(BallotProposal _proposal) external onlyIfAcceptingVotes {
 

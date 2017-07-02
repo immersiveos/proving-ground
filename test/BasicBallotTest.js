@@ -161,17 +161,24 @@ contract('Ballots', function(accounts) {
       const proposalAddress = await ballot.proposalsArray.call(i);
       const proposal = BallotProposal.at(proposalAddress);
       const name = await proposal.name.call();
-      const votersCount = await proposal.votersCount.call();
+
+
+      const honestVotersCount = proposalVotersMap.get(proposalAddress).size;
+
       const tokenBalance = votingResults.get(proposalAddress);
       const ratio = totalTokenVoted.isZero() ? zero : tokenBalance.div(totalTokenVoted).mul(100);
 
-      totalValidVoters += votersCount.toNumber();
+      totalValidVoters += honestVotersCount;
 
-      log(`Proposal '${name}', voters: ${votersCount.toNumber()}, token: ${weiString(tokenBalance)}, vote:${ratio.toFixed(2)}% address: ${proposalAddress}`);
+      log(`Proposal '${name}', honest voters: ${honestVotersCount}, token: ${weiString(tokenBalance)}, vote: ${ratio.toFixed(2)}%, address: ${proposalAddress}`);
+
+      await execLogTx(ballot.finalizeProposal(proposalAddress, honestVotersCount, tokenBalance, totalTokenVoted));
 
     }
 
-    log (`Total counted voters: ${totalValidVoters}`);
+    log (`Total counted honest voters: ${totalValidVoters}`);
+
+
   });
 
   // return true iff voter already voted on a proposal in the map
