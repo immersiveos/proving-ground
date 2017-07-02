@@ -167,7 +167,10 @@ contract('Ballots', function(accounts) {
 
       totalValidVoters += votersCount.toNumber();
 
-      log(`Proposal '${name}', voters: ${votersCount.toNumber()}, token: ${weiString(tokenBalance)}, address: ${proposalAddress}`);
+      const ratio = tokenBalance.div(totalTokenVoted).mul(100);
+
+      log(`Proposal '${name}', voters: ${votersCount.toNumber()}, token: ${weiString(tokenBalance)}, vote:${ratio.toFixed(2)}% address: ${proposalAddress}`);
+
     }
 
     log (`Total valid voters: ${totalValidVoters}`);
