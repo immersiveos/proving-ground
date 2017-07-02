@@ -13,6 +13,8 @@ const TokenBallotRegistry = artifacts.require("./TokenBallotsRegistry.sol");
 const BallotProposal = artifacts.require("./BallotProposal.sol");
 const ImmersiveToken = artifacts.require("./ImmersiveToken.sol");
 
+const AddressesList = artifacts.require("./AddressesList.sol");
+
 // todo: take this from truffle config
 web3.setProvider(new web3.providers.HttpProvider('http://localhost:8545'));
 
@@ -33,9 +35,9 @@ contract('Ballots', function(accounts) {
     const symbol = await token.symbol();
     log (`${symbol}`);
 
-
     const ballotStart =  web3.eth.blockNumber + 20;
     const ballotEnd =  ballotStart + 10;
+
     const ballot = await TokenBallot.new("Test Ballot", token.address, ballotStart, ballotEnd);
 
     const ballotName = await ballot.name.call();
@@ -44,10 +46,6 @@ contract('Ballots', function(accounts) {
     const proposal1 = await BallotProposal.new("Proposal 1", ballot.address);
     const proposal2 = await BallotProposal.new("Proposal 2", ballot.address);
     const proposal3 = await BallotProposal.new("Proposal 3", ballot.address);
-
-    //log(`Proposal1 address: ${proposal1.address}`);
-    //log(`Proposal2 address: ${proposal2.address}`);
-    //log(`Proposal3 address: ${proposal3.address}`);
 
     await execLogTx(ballot.addProposal(proposal1.address));
     await execLogTx(ballot.addProposal(proposal2.address));
@@ -62,20 +60,137 @@ contract('Ballots', function(accounts) {
     await token.fund({value: web3.toWei(new BigNumber(0.1), "ether"), from: accounts[5]});
     await token.fund({value: web3.toWei(new BigNumber(0.1), "ether"), from: accounts[6]});
 
-
     await mineToBlock(new BigNumber(ballotStart));
 
     await ballot.vote(proposal1.address, {from: accounts[1]});
+    await ballot.undoVote(proposal1.address, {from: accounts[1]});
+    await ballot.vote(proposal1.address, {from: accounts[1]});
+
     await ballot.vote(proposal2.address, {from: accounts[2]});
     await ballot.vote(proposal3.address, {from: accounts[3]});
 
     await ballot.vote(proposal1.address, {from: accounts[6]});
-    await ballot.vote(proposal2.address, {from: accounts[4]});
+    await ballot.vote(proposal2.address, {from: accounts[5]});
     await ballot.vote(proposal3.address, {from: accounts[4]});
 
+    await mineToBlock(new BigNumber(ballotEnd));
 
+    const proposalsCount = await ballot.numberOfProposals.call();
 
+    // key - proposal address, value - voters map [voter, balance]
+    const proposalVotersMap = new Map ();
+
+    // voting algorithm step 1 - aggregate token real time balance for each voter. Remove double-voters and voters
+    // with current 0 token balance
+
+    for(let i=0; i < proposalsCount.toNumber(); i++) {
+
+      const proposalAddress = await ballot.proposalsArray.call(i);
+      const proposal = BallotProposal.at(proposalAddress);
+      const name = await proposal.name.call();
+
+      const votersCount = await proposal.votersCount.call();
+
+      log (`Proposal '${name}', voters: ${votersCount.toNumber()}, address: ${proposalAddress}`);
+
+      // key: voter, value: balance (bigNumber)
+      const votersBalancesMap = new Map ();
+
+      proposalVotersMap.set(proposalAddress, votersBalancesMap);
+
+      if (votersCount.toNumber() > 0) {
+        let voterIdx = await proposal.getFirstVoterIdx.call();
+        let hasNext = false;
+        do {
+          const voterAddress = await proposal.getVoterAt.call(voterIdx);
+          log(`Voter address: ${voterAddress}`);
+
+          if (alreadyVoted(proposalVotersMap,voterAddress)) {
+            // double voting - remove voter from this ballet
+            log (`Warning - voter ${voterAddress} already voted for a different proposal - discarding`);
+            removeVoter(proposalVotersMap,voterAddress);
+
+          } else {
+            // no double voting
+            const balance = await token.balanceOf.call(voterAddress);
+            if (balance > 0) {
+              log (`Valid voter token balance: ${weiString(balance)}`);
+              votersBalancesMap.set(voterAddress, balance);
+            } else {
+              log (`Warning! voter ${voterAddress} current token balance is 0 - disregarding vote`);
+            }
+          }
+
+          hasNext = await proposal.hasNextVoter.call(voterIdx);
+          if (hasNext) {
+            voterIdx = await proposal.getNextVoterIdx.call(voterIdx);
+          }
+        } while (hasNext);
+      }
+    }
+
+    // step 2 - after bad voters removal - calc total token balance for each proposal
+
+    // key - proposal address, value - total token voted (bigNumber)
+    const votingResults = new Map();
+    const zero = new BigNumber(0);
+
+    let totalTokenVoted = zero;
+
+    for (let [proposal, voters] of proposalVotersMap) {
+
+      votingResults.set(proposal, zero);
+
+      for (let [voterAddress, balance] of voters) {
+        const newBalance = votingResults.get(proposal).add(balance);
+        votingResults.set(proposal, newBalance);
+        totalTokenVoted = totalTokenVoted.add(balance);
+      }
+    }
+
+    const totalTokenSupply = await token.totalSupply.call();
+
+    // output final results
+    log (`Token voted: ${weiString(totalTokenVoted)} out of total supply of ${weiString(totalTokenSupply)}`);
+
+    let totalValidVoters = 0;
+
+    for(let i=0; i < proposalsCount.toNumber(); i++) {
+
+      const proposalAddress = await ballot.proposalsArray.call(i);
+      const proposal = BallotProposal.at(proposalAddress);
+      const name = await proposal.name.call();
+      const votersCount = await proposal.votersCount.call();
+      const tokenBalance = votingResults.get(proposalAddress);
+
+      totalValidVoters += votersCount.toNumber();
+
+      log(`Proposal '${name}', voters: ${votersCount.toNumber()}, token: ${weiString(tokenBalance)}, address: ${proposalAddress}`);
+    }
+
+    log (`Total valid voters: ${totalValidVoters}`);
   });
+
+
+  const alreadyVoted = (proposalVotersMap, voter) => {
+    for (let [proposal, voters] of proposalVotersMap) {
+      for (let [voterAddress, balance] of voters) {
+        if (voterAddress === voter) return true;
+      }
+    }
+    return false;
+  };
+
+  const removeVoter = (proposalVotersMap, voter) => {
+    for (let [proposal, voters] of proposalVotersMap) {
+      for (let [voterAddress, balance] of voters) {
+        if (voterAddress === voter) {
+          voters.delete(voter);
+        }
+      }
+    }
+  };
+
 
   const logBlock = () => {
     log(`Current block: ${web3.eth.blockNumber}`);
@@ -100,7 +215,7 @@ contract('Ballots', function(accounts) {
 
     log (`Mining ${blocks.toString()} blocks`);
 
-    for (let i=0; i < blocks; i++) {
+    for (let i=0; i<blocks; i++) {
       const mine = new Promise((resolve) => {
         web3.currentProvider.sendAsync({
           jsonrpc: "2.0",
@@ -114,7 +229,6 @@ contract('Ballots', function(accounts) {
     }
 
     log (`Current block: ${web3.eth.blockNumber.toString()}`);
-
   };
 
   const logEvents = (tx) => {

@@ -5,6 +5,8 @@ const TokenBallotRegistry = artifacts.require("./TokenBallotsRegistry.sol");
 const BallotProposal = artifacts.require("./BallotProposal.sol");
 const ImmersiveToken = artifacts.require("./ImmersiveToken.sol");
 
+const AddressesList = artifacts.require("./AddressesList.sol");
+
 const log = console.log;
 const Web3 = require('../node_modules/web3');
 const web3 = new Web3();
@@ -16,6 +18,8 @@ module.exports = async (deployer, network, accounts) => {
 
   if (network === 'development') {
 
+    deployer.deploy(AddressesList);
+    deployer.link(AddressesList,BallotProposal);
 
     deployer.deploy(TokenBallotRegistry);
 
