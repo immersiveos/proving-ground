@@ -1,4 +1,4 @@
-# ImmersiveToken token sale dapp
+# ImmersiveToken token sale, voting and watcher dapp
 
 Token sale participation and watcher dapp using a modern web stack: TypeScript, Node.js/express, Isomorphic webpack (ssr and csr), React, React-Bootstrap, Truffle-Contract and Redux. 
 

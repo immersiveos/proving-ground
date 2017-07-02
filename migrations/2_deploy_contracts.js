@@ -19,7 +19,7 @@ module.exports = async (deployer, network, accounts) => {
     deployer.deploy(TokenBallotRegistry);
 
     TokenBallotRegistry.deployed().then ((res)=> {
-        log (`>>>> Deployed TokenBallotRegistry address: ${res.address}`);
+        log (`>>>> Deployed TokenBallotRegistry to address: ${res.address}`);
       }
     );
 
@@ -36,7 +36,7 @@ module.exports = async (deployer, network, accounts) => {
     deployer.deploy(ImmersiveToken, accounts[0], fundingGoal, endBlock);
 
     ImmersiveToken.deployed().then ((res)=> {
-        log (`>>>> Deployed ImmersiveToken address: ${res.address}`);
+        log (`>>>> Deployed ImmersiveToken to address: ${res.address}`);
       }
     );
 
