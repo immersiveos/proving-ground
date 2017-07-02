@@ -9,8 +9,9 @@ const log = console.log;
 const BigNumber = web3.BigNumber;
 
 const TokenBallot = artifacts.require("./TokenBallot.sol");
-const TokenBallotRegistry = artifacts.require("./TokenBallotRegistry.sol");
+const TokenBallotRegistry = artifacts.require("./TokenBallotsRegistry.sol");
 const BallotProposal = artifacts.require("./BallotProposal.sol");
+const ImmersiveToken = artifacts.require("./ImmersiveToken.sol");
 
 // todo: take this from truffle config
 web3.setProvider(new web3.providers.HttpProvider('http://localhost:8545'));
@@ -25,10 +26,35 @@ contract('Ballots', function(accounts) {
 
     const registry = await TokenBallotRegistry.deployed();
     const token = await ImmersiveToken.deployed();
-    const ballotStart =  new BigNumber(web3.eth.blockNumber);
-    const ballotEnd =  new BigNumber(web3.eth.blockNumber).add(10);
-    const ballot = await TokenBallot.new("Test Ballot", token, ballotStart, ballotEnd);
-    await registry.addBallot(ballot);
+
+    log(`Registry address: ${registry.address}`);
+    log(`Token address: ${token.address}`);
+
+    const symbol = await token.symbol();
+    log (`${symbol}`);
+
+
+    const ballotStart =  web3.eth.blockNumber + 20;
+    const ballotEnd =  ballotStart + 10;
+    const ballot = await TokenBallot.new("Test Ballot", token.address, ballotStart, ballotEnd);
+
+    const ballotName = await ballot.name();
+
+    log(`Ballot address: ${ballot.address}, name: ${ballotName}`);
+
+    const proposal1 = await BallotProposal.new("Proposal 1", ballot.address);
+    const proposal2 = await BallotProposal.new("Proposal 2", ballot.address);
+    const proposal3 = await BallotProposal.new("Proposal 3", ballot.address);
+
+    log(`Proposal1 address: ${proposal1.address}`);
+    log(`Proposal2 address: ${proposal2.address}`);
+    log(`Proposal3 address: ${proposal3.address}`);
+
+    await execLogTx(ballot.addProposal(proposal1.address));
+    await execLogTx(ballot.addProposal(proposal2.address));
+    await execLogTx(ballot.addProposal(proposal3.address));
+
+    execLogTx(registry.addBallot(ballot.address));
   });
 
   const logBlock = () => {

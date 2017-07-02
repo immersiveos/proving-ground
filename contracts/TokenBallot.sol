@@ -11,7 +11,6 @@ contract TokenBallot is Ownable {
 
   uint256 public startBlock;
   uint256 public endBlock;
-
   string public name;
 
   mapping (address => BallotProposal) public proposalsMap;
@@ -30,22 +29,25 @@ contract TokenBallot is Ownable {
 
   function TokenBallot(string _name, IERC20Token _token , uint256 _startBlock, uint256 _endBlock) {
 
-    assert(_startBlock >= block.number);
-    assert(_endBlock > _startBlock);
+    //assert(_startBlock >= block.number);
+    //assert(_endBlock > _startBlock);
 
     token = _token;
     startBlock = _startBlock;
     endBlock = _endBlock;
     name = _name;
 
-    BallotCreatedEvent(name, token, startBlock, endBlock);
+    BallotCreatedEvent(token, name, startBlock, endBlock);
   }
 
-  event BallotCreatedEvent(string indexed name, address indexed token, uint256 startBlock, uint256 endBlock);
+  event BallotCreatedEvent(address indexed token, string name, uint256 startBlock, uint256 endBlock);
 
   function addProposal(BallotProposal _proposal) external onlyOwner onlyBeforeVotingStarts {
-    proposalsMap[_proposal] = _proposal;
-    proposalsArray.push(_proposal);
+
+    //proposalsMap[address(_proposal)] = _proposal;
+    //proposalsArray.push(_proposal);
+
+    ProposalAddedEvent(_proposal);
   }
 
   event ProposalAddedEvent(address indexed proposal);
@@ -55,7 +57,7 @@ contract TokenBallot is Ownable {
     return proposalsArray.length;
   }
 
-  function vote(address _proposal) external onlyIfAceptingVotes {
+  function vote(BallotProposal _proposal) external onlyIfAceptingVotes {
 
      // only token holder may vote
      assert (token.balanceOf(msg.sender) > 0);
@@ -69,7 +71,7 @@ contract TokenBallot is Ownable {
   event VoteEvent(address indexed proposal, address voter);
 
 
-  function undoVote(address _proposal) external onlyIfAceptingVotes {
+  function undoVote(BallotProposal _proposal) external onlyIfAceptingVotes {
 
     // only token holder may unvote
     assert (token.balanceOf(msg.sender) > 0);

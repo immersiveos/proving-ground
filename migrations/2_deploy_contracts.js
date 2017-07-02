@@ -16,6 +16,7 @@ module.exports = async (deployer, network, accounts) => {
 
   if (network === 'development') {
 
+
     deployer.deploy(TokenBallotRegistry);
 
     TokenBallotRegistry.deployed().then ((res)=> {

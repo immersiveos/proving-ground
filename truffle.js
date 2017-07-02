@@ -49,6 +49,14 @@ module.exports = {
       //gas: 3141592,
       //gasPrice: 20000000000
     },
+    testnet: { //ropsten
+      host: 'localhost',
+      port: 8545,
+      network_id: 3,
+      gas: 4000000,
+      gasPrice: 20000000000,
+      from: '0xeBA8e033aE04CF7B4fC9CFc3109e333692d3fb42'
+    },
     rinkeby: {
       host: 'localhost',
       port: 8545,
