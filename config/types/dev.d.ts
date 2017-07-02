@@ -1,5 +1,5 @@
 /**
- * Type declerations for global development variables
+ * Type declarations for global development variables
  */
 
 interface Window {

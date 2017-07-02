@@ -15,6 +15,8 @@ const ImmersiveToken = artifacts.require("./ImmersiveToken.sol");
 
 const AddressesList = artifacts.require("./AddressesList.sol");
 
+import * as Utils from "./Utils.js";
+
 // todo: take this from truffle config
 web3.setProvider(new web3.providers.HttpProvider('http://localhost:8545'));
 
@@ -43,11 +45,11 @@ contract('Ballots', function(accounts) {
     const proposal2 = await BallotProposal.new("Proposal 2", ballot.address);
     const proposal3 = await BallotProposal.new("Proposal 3", ballot.address);
 
-    await execLogTx(ballot.addProposal(proposal1.address));
-    await execLogTx(ballot.addProposal(proposal2.address));
-    await execLogTx(ballot.addProposal(proposal3.address));
+    await Utils.execLogTx(ballot.addProposal(proposal1.address));
+    await Utils.execLogTx(ballot.addProposal(proposal2.address));
+    await Utils.execLogTx(ballot.addProposal(proposal3.address));
 
-    await execLogTx(registry.addBallot(ballot.address));
+    await Utils.execLogTx(registry.addBallot(ballot.address));
 
     await token.fund({value: web3.toWei(new BigNumber(0.1), "ether"), from: accounts[1]});
     await token.fund({value: web3.toWei(new BigNumber(0.2), "ether"), from: accounts[2]});
@@ -58,7 +60,7 @@ contract('Ballots', function(accounts) {
 
     await token.fund({value: web3.toWei(new BigNumber(0.5), "ether"), from: accounts[7]});
 
-    await mineToBlock(new BigNumber(ballotStart));
+    await Utils.mineToBlock(new BigNumber(ballotStart));
 
     await ballot.vote(proposal1.address, {from: accounts[1]});
     await ballot.undoVote(proposal1.address, {from: accounts[1]});
@@ -71,7 +73,7 @@ contract('Ballots', function(accounts) {
     await ballot.vote(proposal2.address, {from: accounts[5]});
     await ballot.vote(proposal3.address, {from: accounts[4]});
 
-    await mineToBlock(new BigNumber(ballotEnd));
+    await Utils.mineToBlock(new BigNumber(ballotEnd));
 
     const proposalsCount = await ballot.numberOfProposals.call();
 
@@ -104,7 +106,7 @@ contract('Ballots', function(accounts) {
           log(`Voter address: ${voterAddress}`);
 
           if (alreadyVoted(proposalVotersMap,voterAddress)) {
-            // double voting - remove voter from this ballet
+            // double voting - remove voter from this ballot
             log (`Warning - voter ${voterAddress} already voted for a different proposal - discarding`);
             removeVoter(proposalVotersMap,voterAddress);
 
@@ -112,7 +114,7 @@ contract('Ballots', function(accounts) {
             // disallow double voting
             const balance = await token.balanceOf.call(voterAddress);
             if (balance > 0) {
-              log (`Valid voter token balance: ${weiString(balance)}`);
+              log (`Valid voter token balance: ${Utils.weiString(balance)}`);
               votersBalancesMap.set(voterAddress, balance);
             } else {
               log (`Warning! voter ${voterAddress} current token balance is 0 - disregarding vote`);
@@ -146,7 +148,7 @@ contract('Ballots', function(accounts) {
     const totalTokenSupply = await token.totalSupply.call();
 
     // output final results
-    log (`Total token voted: ${weiString(totalTokenVoted)} out of total supply of ${weiString(totalTokenSupply)}`);
+    log (`Total token voted: ${Utils.weiString(totalTokenVoted)} out of total supply of ${Utils.weiString(totalTokenSupply)}`);
 
     if (!totalTokenSupply.isZero()) {
       const ratio = totalTokenVoted.div(totalTokenSupply).mul(100);
@@ -160,24 +162,20 @@ contract('Ballots', function(accounts) {
       const proposalAddress = await ballot.proposalsArray.call(i);
       const proposal = BallotProposal.at(proposalAddress);
       const name = await proposal.name.call();
-
-
       const honestVotersCount = proposalVotersMap.get(proposalAddress).size;
-
       const tokenBalance = votingResults.get(proposalAddress);
       const ratio = totalTokenVoted.isZero() ? zero : tokenBalance.div(totalTokenVoted).mul(100);
 
       totalValidVoters += honestVotersCount;
 
-      log(`Proposal '${name}', honest voters: ${honestVotersCount}, token: ${weiString(tokenBalance)}, vote: ${ratio.toFixed(2)}%, address: ${proposalAddress}`);
+      // real-time proposal data - at current block:
+      log(`Proposal '${name}', honest voters: ${honestVotersCount}, token: ${Utils.weiString(tokenBalance)}, vote: ${ratio.toFixed(2)}%, address: ${proposalAddress}`);
 
-      await execLogTx(ballot.finalizeProposal(proposalAddress, honestVotersCount, tokenBalance, totalTokenVoted));
-
+      // finalize proposal
+      await Utils.execLogTx(ballot.finalizeProposal(proposalAddress, honestVotersCount, tokenBalance, totalTokenVoted));
     }
 
     log (`Total counted honest voters: ${totalValidVoters}`);
-
-
   });
 
   // return true iff voter already voted on a proposal in the map
@@ -199,62 +197,6 @@ contract('Ballots', function(accounts) {
         }
       }
     }
-  };
-
-  const logBlock = () => {
-    log(`Current block: ${web3.eth.blockNumber}`);
-  };
-
-  const logKeyValue = (key, value) => {
-    log(`${key} : ${value}`)
-  };
-
-  const weiString = (amount) => {
-    return `${amount} wei (${web3.fromWei(amount)} eth)`
-  };
-
-  const mineToBlock = async (blockNumber) => {
-    log (`Mining to block ${blockNumber.toString()}...`);
-    const currBlock = web3.eth.blockNumber;
-    const blocks = blockNumber.sub(currBlock).toNumber();
-    if (blocks > 0) await mineBlocks(blocks);
-  };
-
-  const mineBlocks = async (blocks)  => {
-
-    log (`Mining ${blocks.toString()} blocks`);
-
-    for (let i=0; i<blocks; i++) {
-      const mine = new Promise((resolve) => {
-        web3.currentProvider.sendAsync({
-          jsonrpc: "2.0",
-          method: "evm_mine",
-          id: new Date().getTime(),
-        }, (err, result) => {
-          resolve();
-        })
-      });
-      await mine;
-    }
-
-    log (`Current block: ${web3.eth.blockNumber.toString()}`);
-  };
-
-  const logEvents = (tx) => {
-    for (let l of tx.logs) {
-      log(`${l.event}:`);
-      log(l.args);
-    }
-  };
-
-  const logGas = (tx) => {
-    log("Gas used: " + tx.receipt.gasUsed);
-  };
-
-  const execLogTx = async (promise) => {
-    const tx = await promise;
-    logGas(tx);
-    logEvents(tx);
   };
 
 });
