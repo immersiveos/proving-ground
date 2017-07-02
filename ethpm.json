@@ -1,13 +1,14 @@
 {
-  "package_name": "ImmersiveToken",
+  "package_name": "TokenVote",
   "version": "0.0.1",
-  "description": "Ethereum ImmersiveOS Token Sale Dapp",
+  "description": "Standard ERC20Token proposals creation & voting dapp",
   "authors": [
-    "Core Dev Team <devteam@immersiveos.com>"
+    "Aviv Eyal <aviveyal07@gmail.com>"
   ],
   "keywords": [
-    "immersiveOS",
-    "immersiveToken"
+    "ERC20Token",
+    "Ethereum",
+    "Voting"
   ],
-  "license": "MIT"
+  "license": "Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License. https://creativecommons.org/licenses/by-nc-sa/4.0/"
 }

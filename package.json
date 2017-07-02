@@ -1,8 +1,8 @@
 {
-  "name": "postmodern",
+  "name": "TokenVote",
   "private": true,
   "version": "0.0.1",
-  "description": "Universal typescript dapp",
+  "description": "Token Vote - a Standard ERC20Token proposals creation & voting smart contracts and dapp",
   "main": "build/server.js",
   "scripts": {
     "clean": "rimraf build",
@@ -17,7 +17,7 @@
     "lint": "tslint \"src/**/**.ts*\"",
     "test-rpc": "testrpc i -5 & truffle test ; RETVAL=$? ; JOBS=`jobs -p` ; if [ -n \"$JOBS\" ]; then kill $JOBS; fi ; exit $RETVAL"
   },
-  "license": "MIT",
+  "license": "Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License. https://creativecommons.org/licenses/by-nc-sa/4.0/",
   "devDependencies": {
     "@types/base16": "^1.0.1",
     "@types/chai": "^4.0.0",
