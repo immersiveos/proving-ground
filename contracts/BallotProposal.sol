@@ -12,6 +12,26 @@ contract BallotProposal {
   string public name;
   TokenBallot public ballot;
 
+  // true when final results are available
+  bool public finalized;
+
+  // final results - only valid if finalized is true
+  uint256  public finalVoters;
+  uint256  public finalTokenVoted;
+
+  // at time of total token supply at finalization time
+  uint256  public finalRatioOfToken;
+
+  modifier onlyBallotCallable() {
+    assert(msg.sender == address(ballot));
+    _;
+  }
+
+  modifier onlyIfNotFinalized() {
+    assert(finalized == false);
+    _;
+  }
+
   function BallotProposal(string _name, TokenBallot _ballot) {
     name = _name;
     ballot = _ballot;
@@ -19,6 +39,56 @@ contract BallotProposal {
   }
 
   event BallotProposalCreatedEvent(address ballot, string name);
+
+
+  function vote(address voter) external onlyBallotCallable {
+
+    // only the ballot contract code may initiate a vote for the proposal
+    assert (votesMap[voter] == address(0));
+
+    votesMap[voter] = msg.sender;
+    votes.append(voter);
+
+    VoteEvent(voter);
+  }
+
+  function finalizeResults (
+    uint256 _voters,
+    uint256 _votingToken,
+    uint256 _ratioOfToken
+  ) external onlyBallotCallable onlyIfNotFinalized {
+
+    finalized = true;
+
+    finalVoters = _voters;
+    finalTokenVoted = _votingToken;
+    finalRatioOfToken = _ratioOfToken;
+
+    FinalResultsEvent(_voters,_votingToken,_ratioOfToken);
+  }
+  event FinalResultsEvent(uint256 voters, uint256 votingToken, uint256 ratioOfToken);
+
+  event VoteEvent(address voter);
+
+  function undoVote(address voter) external onlyBallotCallable {
+
+    // only the ballot contract code may initiate a vote for the proposal
+    assert (votesMap[voter] != address(0));
+
+    votesMap[voter] = address(0);
+
+    var item = votes.find(voter);
+    if (votes.iterate_valid(item))  {
+      votes.remove(item);
+    }
+
+    UndoVoteEvent(voter);
+  }
+
+  event UndoVoteEvent(address vorter);
+
+
+  // voters iteration
 
   function votersCount() external constant returns (uint80) {
     return votes.itemsCount();
@@ -36,7 +106,6 @@ contract BallotProposal {
     return votes.iterate_valid(it);
   }
 
-  // votes iteration
   function getNextVoterIdx(uint80 idx) external constant returns(uint80) {
     var it = votes.iterate_next(idx);
     if (votes.iterate_valid(it)) return it;
@@ -47,37 +116,4 @@ contract BallotProposal {
     if (votes.iterate_valid(idx)) return votes.iterate_get(idx);
     else return address(0);
   }
-
-
-  function vote(address voter) external {
-
-    // only the ballot contract code may initiate a vote for the proposal
-    assert (msg.sender == address(ballot));
-    assert (votesMap[voter] == address(0));
-
-    votesMap[voter] = msg.sender;
-    votes.append(voter);
-
-    VoteEvent(voter);
-  }
-
-  event VoteEvent(address voter);
-
-  function undoVote(address voter) external {
-
-    // only the ballot contract code may initiate a vote for the proposal
-    assert (msg.sender == address(ballot));
-    assert (votesMap[voter] != address(0));
-
-    votesMap[voter] = address(0);
-
-    var item = votes.find(voter);
-    if (votes.iterate_valid(item))  {
-      votes.remove(item);
-    }
-
-    UndoVoteEvent(voter);
-  }
-
-  event UndoVoteEvent(address vorter);
 }

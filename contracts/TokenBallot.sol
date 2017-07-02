@@ -16,7 +16,7 @@ contract TokenBallot is Ownable {
   mapping (address => BallotProposal) public proposalsMap;
   BallotProposal[] public proposalsArray;
 
-  modifier onlyIfAceptingVotes() {
+  modifier onlyIfAcceptingVotes() {
     assert(block.number >= startBlock);
     assert(block.number <= endBlock);
     _;
@@ -24,6 +24,11 @@ contract TokenBallot is Ownable {
 
   modifier onlyBeforeVotingStarts() {
     assert(block.number < startBlock);
+    _;
+  }
+
+  modifier onlyAfterVotingEnded() {
+    assert(block.number > endBlock);
     _;
   }
 
@@ -54,10 +59,29 @@ contract TokenBallot is Ownable {
 
   // array iteration helper
   function numberOfProposals() external constant returns (uint256) {
+
     return proposalsArray.length;
   }
 
-  function vote(BallotProposal _proposal) external onlyIfAceptingVotes {
+  function finalizeProposalResult (
+    BallotProposal _proposal,
+    uint256 _voters,
+    uint256 _votingToken,
+    uint256 _ratioOfToken) external onlyOwner onlyAfterVotingEnded {
+
+    var proposal = proposalsMap[_proposal];
+
+    assert(proposal != address(0));
+    assert(!proposal.finalized());
+
+    proposal.finalizeResults(_voters,_votingToken,_ratioOfToken);
+
+    ProposalFinalizedEvent(proposal, _voters, _votingToken, _ratioOfToken);
+  }
+
+  event ProposalFinalizedEvent(address indexed proposal, uint256 voters, uint256 votingToken, uint256 ratioOfToken);
+
+  function vote(BallotProposal _proposal) external onlyIfAcceptingVotes {
 
      // only token holder may vote
      assert (token.balanceOf(msg.sender) > 0);
@@ -71,7 +95,7 @@ contract TokenBallot is Ownable {
   event VoteEvent(address indexed proposal, address voter);
 
 
-  function undoVote(BallotProposal _proposal) external onlyIfAceptingVotes {
+  function undoVote(BallotProposal _proposal) external onlyIfAcceptingVotes {
 
     // only token holder may unvote
     assert(token.balanceOf(msg.sender) > 0);

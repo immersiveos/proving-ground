@@ -18,9 +18,6 @@ const AddressesList = artifacts.require("./AddressesList.sol");
 // todo: take this from truffle config
 web3.setProvider(new web3.providers.HttpProvider('http://localhost:8545'));
 
-BigNumber.config({ ROUNDING_MODE: BigNumber.ROUND_HALF_EVEN });
-
-const blockGasLimit = 4200000;
 
 contract('Ballots', function(accounts) {
 
@@ -59,6 +56,8 @@ contract('Ballots', function(accounts) {
     await token.fund({value: web3.toWei(new BigNumber(0.1), "ether"), from: accounts[4]});
     await token.fund({value: web3.toWei(new BigNumber(0.1), "ether"), from: accounts[5]});
     await token.fund({value: web3.toWei(new BigNumber(0.1), "ether"), from: accounts[6]});
+
+    await token.fund({value: web3.toWei(new BigNumber(0.5), "ether"), from: accounts[7]});
 
     await mineToBlock(new BigNumber(ballotStart));
 
@@ -111,7 +110,7 @@ contract('Ballots', function(accounts) {
             removeVoter(proposalVotersMap,voterAddress);
 
           } else {
-            // no double voting
+            // disallow double voting
             const balance = await token.balanceOf.call(voterAddress);
             if (balance > 0) {
               log (`Valid voter token balance: ${weiString(balance)}`);
@@ -129,7 +128,7 @@ contract('Ballots', function(accounts) {
       }
     }
 
-    // step 2 - after bad voters removal - calc total token balance for each proposal
+    // step 2 - after removal of dishonest voters - calc total token balance for each proposal
 
     // key - proposal address, value - total token voted (bigNumber)
     const votingResults = new Map();
@@ -164,19 +163,18 @@ contract('Ballots', function(accounts) {
       const name = await proposal.name.call();
       const votersCount = await proposal.votersCount.call();
       const tokenBalance = votingResults.get(proposalAddress);
+      const ratio = totalTokenVoted.isZero() ? zero : tokenBalance.div(totalTokenVoted).mul(100);
 
       totalValidVoters += votersCount.toNumber();
-
-      const ratio = tokenBalance.div(totalTokenVoted).mul(100);
 
       log(`Proposal '${name}', voters: ${votersCount.toNumber()}, token: ${weiString(tokenBalance)}, vote:${ratio.toFixed(2)}% address: ${proposalAddress}`);
 
     }
 
-    log (`Total valid voters: ${totalValidVoters}`);
+    log (`Total counted voters: ${totalValidVoters}`);
   });
 
-
+  // return true iff voter already voted on a proposal in the map
   const alreadyVoted = (proposalVotersMap, voter) => {
     for (let [proposal, voters] of proposalVotersMap) {
       for (let [voterAddress, balance] of voters) {
@@ -186,6 +184,7 @@ contract('Ballots', function(accounts) {
     return false;
   };
 
+  // remove voter from all proposals tracked by the map
   const removeVoter = (proposalVotersMap, voter) => {
     for (let [proposal, voters] of proposalVotersMap) {
       for (let [voterAddress, balance] of voters) {
@@ -195,7 +194,6 @@ contract('Ballots', function(accounts) {
       }
     }
   };
-
 
   const logBlock = () => {
     log(`Current block: ${web3.eth.blockNumber}`);
