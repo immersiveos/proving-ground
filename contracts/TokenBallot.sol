@@ -29,8 +29,8 @@ contract TokenBallot is Ownable {
 
   function TokenBallot(string _name, IERC20Token _token , uint256 _startBlock, uint256 _endBlock) {
 
-    //assert(_startBlock >= block.number);
-    //assert(_endBlock > _startBlock);
+    assert(_startBlock >= block.number);
+    assert(_endBlock > _startBlock);
 
     token = _token;
     startBlock = _startBlock;
@@ -44,8 +44,8 @@ contract TokenBallot is Ownable {
 
   function addProposal(BallotProposal _proposal) external onlyOwner onlyBeforeVotingStarts {
 
-    //proposalsMap[address(_proposal)] = _proposal;
-    //proposalsArray.push(_proposal);
+    proposalsMap[address(_proposal)] = _proposal;
+    proposalsArray.push(_proposal);
 
     ProposalAddedEvent(_proposal);
   }
@@ -74,7 +74,7 @@ contract TokenBallot is Ownable {
   function undoVote(BallotProposal _proposal) external onlyIfAceptingVotes {
 
     // only token holder may unvote
-    assert (token.balanceOf(msg.sender) > 0);
+    assert(token.balanceOf(msg.sender) > 0);
 
     var proposal = proposalsMap[_proposal];
     proposal.undoVote(msg.sender);

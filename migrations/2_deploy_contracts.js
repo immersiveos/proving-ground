@@ -36,10 +36,12 @@ module.exports = async (deployer, network, accounts) => {
 
     deployer.deploy(ImmersiveToken, accounts[0], fundingGoal, endBlock);
 
-    ImmersiveToken.deployed().then ((res)=> {
-        log (`>>>> Deployed ImmersiveToken to address: ${res.address}`);
-      }
-    );
+    const token = await ImmersiveToken.deployed();
+
+    log (`>>>> Deployed ImmersiveToken to address: ${token.address}`);
+
+
+
 
   } else if (network === 'live') {
     log("todo: livenet deployment");

@@ -22,7 +22,7 @@ const blockGasLimit = 4200000;
 
 contract('Ballots', function(accounts) {
 
-  it('Create Ballot', async () => {
+  it('Basic test', async () => {
 
     const registry = await TokenBallotRegistry.deployed();
     const token = await ImmersiveToken.deployed();
@@ -38,23 +38,43 @@ contract('Ballots', function(accounts) {
     const ballotEnd =  ballotStart + 10;
     const ballot = await TokenBallot.new("Test Ballot", token.address, ballotStart, ballotEnd);
 
-    const ballotName = await ballot.name();
-
+    const ballotName = await ballot.name.call();
     log(`Ballot address: ${ballot.address}, name: ${ballotName}`);
 
     const proposal1 = await BallotProposal.new("Proposal 1", ballot.address);
     const proposal2 = await BallotProposal.new("Proposal 2", ballot.address);
     const proposal3 = await BallotProposal.new("Proposal 3", ballot.address);
 
-    log(`Proposal1 address: ${proposal1.address}`);
-    log(`Proposal2 address: ${proposal2.address}`);
-    log(`Proposal3 address: ${proposal3.address}`);
+    //log(`Proposal1 address: ${proposal1.address}`);
+    //log(`Proposal2 address: ${proposal2.address}`);
+    //log(`Proposal3 address: ${proposal3.address}`);
 
     await execLogTx(ballot.addProposal(proposal1.address));
     await execLogTx(ballot.addProposal(proposal2.address));
     await execLogTx(ballot.addProposal(proposal3.address));
 
-    execLogTx(registry.addBallot(ballot.address));
+    await execLogTx(registry.addBallot(ballot.address));
+
+    await token.fund({value: web3.toWei(new BigNumber(0.1), "ether"), from: accounts[1]});
+    await token.fund({value: web3.toWei(new BigNumber(0.2), "ether"), from: accounts[2]});
+    await token.fund({value: web3.toWei(new BigNumber(0.3), "ether"), from: accounts[3]});
+    await token.fund({value: web3.toWei(new BigNumber(0.1), "ether"), from: accounts[4]});
+    await token.fund({value: web3.toWei(new BigNumber(0.1), "ether"), from: accounts[5]});
+    await token.fund({value: web3.toWei(new BigNumber(0.1), "ether"), from: accounts[6]});
+
+
+    await mineToBlock(new BigNumber(ballotStart));
+
+    await ballot.vote(proposal1.address, {from: accounts[1]});
+    await ballot.vote(proposal2.address, {from: accounts[2]});
+    await ballot.vote(proposal3.address, {from: accounts[3]});
+
+    await ballot.vote(proposal1.address, {from: accounts[6]});
+    await ballot.vote(proposal2.address, {from: accounts[4]});
+    await ballot.vote(proposal3.address, {from: accounts[4]});
+
+
+
   });
 
   const logBlock = () => {
@@ -99,7 +119,7 @@ contract('Ballots', function(accounts) {
 
   const logEvents = (tx) => {
     for (let l of tx.logs) {
-      log(l.event + ":");
+      log(`${l.event}:`);
       log(l.args);
     }
   };
