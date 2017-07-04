@@ -6,6 +6,8 @@ const BigNumber = web3.BigNumber;
 
 web3.setProvider(new web3.providers.HttpProvider('http://localhost:8545'));
 
+// blockchain test utils
+
 export const logBlock = () => {
   log(`Current block: ${web3.eth.blockNumber}`);
 };

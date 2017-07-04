@@ -13,6 +13,8 @@ contract TokenBallot is Ownable {
   uint256 public endBlock;
   string public name;
 
+  address public finalizationDelegate;
+
   mapping (address => BallotProposal) public proposalsMap;
   BallotProposal[] public proposalsArray;
 
@@ -32,7 +34,7 @@ contract TokenBallot is Ownable {
     _;
   }
 
-  function TokenBallot(string _name, IERC20Token _token , uint256 _startBlock, uint256 _endBlock) {
+  function TokenBallot(string _name, IERC20Token _token , uint256 _startBlock, uint256 _endBlock, address _delegate) {
 
     assert(_startBlock >= block.number);
     assert(_endBlock > _startBlock);
@@ -41,6 +43,8 @@ contract TokenBallot is Ownable {
     startBlock = _startBlock;
     endBlock = _endBlock;
     name = _name;
+
+    finalizationDelegate = _delegate;
 
     BallotCreatedEvent(token, name, startBlock, endBlock);
   }
@@ -63,11 +67,14 @@ contract TokenBallot is Ownable {
     return proposalsArray.length;
   }
 
+  // this will be called by scheduled server-side script
   function finalizeProposal (
     BallotProposal _proposal,
     uint256 _voters,
     uint256 _votedTokens,
-    uint256 _allVotedTokens) external onlyOwner onlyAfterVotingEnded {
+    uint256 _allVotedTokens) external onlyAfterVotingEnded {
+
+    assert(msg.sender == finalizationDelegate);
 
     var proposal = proposalsMap[_proposal];
 

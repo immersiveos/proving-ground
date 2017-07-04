@@ -36,7 +36,7 @@ contract('Ballots', function(accounts) {
     const ballotStart =  web3.eth.blockNumber + 20;
     const ballotEnd =  ballotStart + 10;
 
-    const ballot = await TokenBallot.new("Test Ballot", token.address, ballotStart, ballotEnd);
+    const ballot = await TokenBallot.new("Test Ballot", token.address, ballotStart, ballotEnd, accounts[2]);
 
     const ballotName = await ballot.name.call();
     log(`Ballot address: ${ballot.address}, name: ${ballotName}`);
@@ -169,33 +169,27 @@ contract('Ballots', function(accounts) {
       totalValidVoters += honestVotersCount;
 
       // real-time proposal data - at current block:
-      log(`Proposal '${name}', honest voters: ${honestVotersCount}, token: ${Utils.weiString(tokenBalance)}, vote: ${ratio.toFixed(2)}%, address: ${proposalAddress}`);
+      log(`Proposal '${name}', honest voters: ${honestVotersCount}, honest token: ${Utils.weiString(tokenBalance)}, vote: ${ratio.toFixed(4)}%, address: ${proposalAddress}`);
 
       // finalize proposal
-      await Utils.execLogTx(ballot.finalizeProposal(proposalAddress, honestVotersCount, tokenBalance, totalTokenVoted));
+      await Utils.execLogTx(ballot.finalizeProposal(proposalAddress, honestVotersCount, tokenBalance, totalTokenVoted, {from:accounts[2]}));
     }
 
-    log (`Total counted honest voters: ${totalValidVoters}`);
+    log (`Total counted ballot honest voters: ${totalValidVoters}`);
   });
 
   // return true iff voter already voted on a proposal in the map
   const alreadyVoted = (proposalVotersMap, voter) => {
     for (let [proposal, voters] of proposalVotersMap) {
-      for (let [voterAddress, balance] of voters) {
-        if (voterAddress === voter) return true;
-      }
+      if (voters.has(voter)) return true;
     }
     return false;
   };
 
-  // remove voter from all proposals tracked by the map
+  // remove voter from all proposals
   const removeVoter = (proposalVotersMap, voter) => {
     for (let [proposal, voters] of proposalVotersMap) {
-      for (let [voterAddress, balance] of voters) {
-        if (voterAddress === voter) {
-          voters.delete(voter);
-        }
-      }
+      if (voters.has(voter)) voters.delete(voter);
     }
   };
 

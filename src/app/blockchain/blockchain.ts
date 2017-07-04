@@ -213,6 +213,12 @@ export class Blockchain {
     return new Date (this.lastBlock.date.getTime() + msecs);
   }
 
+
+  // Transactions tracking
+  // due to lack of common support for eth_newPendingTransactionFilter and the alpha status of
+  // https://github.com/MetaMask/provider-engine
+  // See: https://github.com/MetaMask/provider-engine/issues/23
+
   private updateChain () {
 
     log(`Processing...`);

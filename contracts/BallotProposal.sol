@@ -66,7 +66,7 @@ contract BallotProposal {
 
     FinalResultsEvent(_voters, _votedTokens, _allVotedtokens);
   }
-  event FinalResultsEvent(uint256 voters, uint256 votedTokens, uint256 allVotedTokens);
+  event FinalResultsEvent(uint256 voters, uint256 votedTokens, uint256 votingTokenAll);
 
   event VoteEvent(address voter);
 
@@ -86,7 +86,6 @@ contract BallotProposal {
   }
 
   event UndoVoteEvent(address vorter);
-
 
   // voters iteration
 

@@ -1,5 +1,10 @@
 pragma solidity ^0.4.11;
 
+// a dynamic addresses list supporting dynamic insertion and removal of addresses and iteration
+// Note: may contain duplicated items - it is up to the user to check the existence of an address using contains() before appending a new address
+// based on https://github.com/ethereum/dapp-bin/blob/master/library/linkedList.sol
+// Designed to overcome the pain and gas involved in converting between bytes32 and address primitive data types
+
 library AddressesList {
 
   struct data {
