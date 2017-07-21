@@ -1,7 +1,3 @@
-import bignum from 'bignum';
-
-import sha3 from 'solidity-sha3';
-
 const Web3 = require('web3');
 const crypto = require('crypto');
 const web3 = new Web3();
@@ -12,17 +8,16 @@ const TokenBallot = artifacts.require("./TokenBallot.sol");
 const TokenBallotRegistry = artifacts.require("./TokenBallotsRegistry.sol");
 const BallotProposal = artifacts.require("./BallotProposal.sol");
 const ImmersiveToken = artifacts.require("./ImmersiveToken.sol");
-
 const AddressesList = artifacts.require("./AddressesList.sol");
 
 import * as Utils from "./Utils.js";
 
-// todo: take this from truffle config
+// todo: take this from the truffle config
 web3.setProvider(new web3.providers.HttpProvider('http://localhost:8545'));
 
 contract('Ballots', function(accounts) {
 
-  it('Basic test', async () => {
+  it('Basic voting test', async () => {
 
     const registry = await TokenBallotRegistry.deployed();
     const token = await ImmersiveToken.deployed();
@@ -31,7 +26,7 @@ contract('Ballots', function(accounts) {
     log(`Token address: ${token.address}`);
 
     const symbol = await token.symbol();
-    log (`${symbol}`);
+    log (`Token symbol: ${symbol}`);
 
     const ballotStart =  web3.eth.blockNumber + 20;
     const ballotEnd =  ballotStart + 10;
@@ -41,9 +36,9 @@ contract('Ballots', function(accounts) {
     const ballotName = await ballot.name.call();
     log(`Ballot address: ${ballot.address}, name: ${ballotName}`);
 
-    const proposal1 = await BallotProposal.new("Proposal 1", ballot.address);
-    const proposal2 = await BallotProposal.new("Proposal 2", ballot.address);
-    const proposal3 = await BallotProposal.new("Proposal 3", ballot.address);
+    const proposal1 = await BallotProposal.new("Proposal 1", ballot.address, "http://foo.io/1");
+    const proposal2 = await BallotProposal.new("Proposal 2", ballot.address, "http://foo.io/2");
+    const proposal3 = await BallotProposal.new("Proposal 3", ballot.address, "http://foo.io/3");
 
     await Utils.execLogTx(ballot.addProposal(proposal1.address));
     await Utils.execLogTx(ballot.addProposal(proposal2.address));
@@ -64,6 +59,7 @@ contract('Ballots', function(accounts) {
 
     await ballot.vote(proposal1.address, {from: accounts[1]});
     await ballot.undoVote(proposal1.address, {from: accounts[1]});
+
     await ballot.vote(proposal1.address, {from: accounts[1]});
 
     await ballot.vote(proposal2.address, {from: accounts[2]});
@@ -77,7 +73,7 @@ contract('Ballots', function(accounts) {
 
     const proposalsCount = await ballot.numberOfProposals.call();
 
-    // key - proposal address, value - voters map [voter, balance]
+    // key - proposal address, value - voters map [voter => balance]
     const proposalVotersMap = new Map ();
 
     // voting algorithm step 1 - aggregate token real time balance for each voter. Remove double-voters and voters

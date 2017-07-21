@@ -70,8 +70,14 @@ export class Blockchain {
   // the number of confirmations requested by the caller (>=1)
   public async processTransaction(txContext: TxContext) {
 
-    txContext.request.then((res) => {
+    if (!this.userAccount) {
+      txContext.state = TxState.Error;
+      txContext.error = 'No unlocked provided user - please unlock access to your web3 provider such as MetaMask using your passphrase.';
+      txContext.performCallback();
+      return;
+    }
 
+    txContext.request.then((res) => {
       if (res == null || res.receipt == null) {
         txContext.state = TxState.Error;
         txContext.error = 'Transaction failed - no receipt';
@@ -98,8 +104,6 @@ export class Blockchain {
       txContext.performCallback();
     });
 
-    // todo: listen to transaction events to catch transaction removed event
-    // submit the transaction and log transaction hash
   }
 
   private async updateNetworkStatus () {

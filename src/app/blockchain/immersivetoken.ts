@@ -10,10 +10,6 @@ import {ImmersiveTokenActions} from '../redux/models/token';
 const appConfig = require('../../../config/main');
 const contracts = require('truffle-contract');
 
-//const localStore = require('store/dist/store.modern');
-//const storeOpsPlugin = require('store/plugins/operations');
-//store.addPlugin(storeOpsPlugin);
-
 const log = console.log;
 
 export class TokenInfo {

@@ -6,11 +6,11 @@ import {Blockchain} from '../../../blockchain/blockchain';
 import {BlockchainError, BlockInfo} from 'blockchain/blockinfo';
 
 export interface IBlockchainState {
-  userAccount?: string;
+  userAccount?:string;
   networkId:number;
   connected:boolean;
-  error?: BlockchainError;
-  lastBlock?: BlockInfo;
+  error?:BlockchainError;
+  lastBlock?:BlockInfo;
   updated?:Date;
 }
 

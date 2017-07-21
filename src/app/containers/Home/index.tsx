@@ -41,11 +41,8 @@ const initialState:IState = {
     connected: state.blockchain.connected,
     lastError: state.blockchain.lastError,
     updated: state.blockchain.updated,
-
     token: state.immersive.token,
-
     tokenError: state.immersive.error
-
   }),
   (dispatch) => ({
 
@@ -61,9 +58,7 @@ class Home extends React.Component<IProps, IState> {
   public render() {
 
     log('Rendering home...');
-
     const {token, tokenError} = this.props;
-
     const loading = token == null;
     const error = tokenError != null;
 
@@ -126,11 +121,11 @@ class Home extends React.Component<IProps, IState> {
 
             <ListGroupItem>Raised: {balance}</ListGroupItem>
 
-            <ListGroupItem>Address: <a href={contractUrl}
-                                       target="_blank">{BlockchainUtils.shortAddressFormat(token.address)}</a></ListGroupItem>
+            <ListGroupItem>Address:&nbsp;
+              <a href={contractUrl} target="_blank">{BlockchainUtils.shortAddressFormat(token.address)}</a>
+            </ListGroupItem>
 
             <ListGroupItem>{endedDisp} <TimeAgo date={endDate}/>&nbps;(Block {token.fundingEndBlock.toString()})</ListGroupItem>
-
 
             { successful ?
               <ListGroupItem>Successful! thanks for your support</ListGroupItem> : null

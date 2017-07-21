@@ -7,16 +7,23 @@ import "./BallotProposal.sol";
 
 contract TokenBallot is Ownable {
 
+  string public name;
+  string public infoUrl;
+
   IERC20Token public token;
 
   uint256 public startBlock;
   uint256 public endBlock;
-  string public name;
 
   address public finalizationDelegate;
 
+
   mapping (address => BallotProposal) public proposalsMap;
+
   BallotProposal[] public proposalsArray;
+
+  uint8 public finalizedProposalsCount;
+  bool public votesFinalized;
 
   modifier onlyIfAcceptingVotes() {
     assert(block.number >= startBlock);
@@ -34,47 +41,44 @@ contract TokenBallot is Ownable {
     _;
   }
 
-  function TokenBallot(string _name, IERC20Token _token , uint256 _startBlock, uint256 _endBlock, address _delegate) {
-
+  function TokenBallot(string _name, IERC20Token _token , uint256 _startBlock, uint256 _endBlock, address _delegate, string _infoUrl) {
     assert(_startBlock >= block.number);
     assert(_endBlock > _startBlock);
-
     token = _token;
     startBlock = _startBlock;
     endBlock = _endBlock;
     name = _name;
-
     finalizationDelegate = _delegate;
+    infoUrl = _infoUrl;
 
-    BallotCreatedEvent(token, name, startBlock, endBlock);
+    BallotCreatedEvent(token, name, startBlock, endBlock, infoUrl);
   }
 
   event BallotCreatedEvent(address indexed token, string name, uint256 startBlock, uint256 endBlock);
 
   function addProposal(BallotProposal _proposal) external onlyOwner onlyBeforeVotingStarts {
-
     proposalsMap[address(_proposal)] = _proposal;
     proposalsArray.push(_proposal);
-
     ProposalAddedEvent(_proposal);
   }
 
-  event ProposalAddedEvent(address indexed proposal);
+  event ProposalAddedEvent(address proposal);
 
   // array iteration helper
-  function numberOfProposals() external constant returns (uint256) {
-
+  function proposalsCount() external constant returns (uint256) {
     return proposalsArray.length;
   }
 
-  // this will be called by scheduled server-side script
+  // this needs to be called by the ballot delegate or owner
+  // can also be executed by a server-side script
   function finalizeProposal (
     BallotProposal _proposal,
     uint256 _voters,
     uint256 _votedTokens,
     uint256 _allVotedTokens) external onlyAfterVotingEnded {
 
-    assert(msg.sender == finalizationDelegate);
+    if (msg.sender != finalizationDelegate && msg.sender != owner)
+      throw;
 
     var proposal = proposalsMap[_proposal];
 
@@ -83,10 +87,19 @@ contract TokenBallot is Ownable {
 
     proposal.finalizeResults(_voters,_votedTokens,_allVotedTokens);
 
+    finalizedProposalsCount += 1;
+
+    if (finalizedProposalsCount == proposalsArray.length) {
+      votesFinalized = true;
+      BallotFinalizedEvent(_allVotedTokens);
+    }
+
     ProposalFinalizedEvent(proposal, _voters, _votedTokens, _allVotedTokens);
   }
 
   event ProposalFinalizedEvent(address indexed proposal, uint256 voters, uint256 votedTokens, uint256 allVotedTokens);
+
+  event BallotFinalizedEvent(uint256 allVotedTokens);
 
   function vote(BallotProposal _proposal) external onlyIfAcceptingVotes {
 

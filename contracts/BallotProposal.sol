@@ -4,12 +4,13 @@ import "./TokenBallot.sol";
 import "./AddressesList.sol";
 
 contract BallotProposal {
-
   using AddressesList for AddressesList.data;
 
   mapping (address => address) public votesMap;
   AddressesList.data public votes;
   string public name;
+  string public infoUrl;
+
   TokenBallot public ballot;
 
   // true when final results are available
@@ -19,7 +20,7 @@ contract BallotProposal {
   uint256  public finalVoters;
   uint256  public finalVotedTokens;
 
-  // at time of total token supply at finalization time
+  // total token supply at finalization time
   uint256  public finalAllVotedTokens;
 
   modifier onlyBallotCallable() {
@@ -32,23 +33,20 @@ contract BallotProposal {
     _;
   }
 
-  function BallotProposal(string _name, TokenBallot _ballot) {
+  function BallotProposal(string _name, TokenBallot _ballot, string _infoUrl) {
     name = _name;
     ballot = _ballot;
-    BallotProposalCreatedEvent(_ballot, _name);
+    infoUrl = _infoUrl;
+    BallotProposalCreatedEvent(_ballot, _name, _infoUrl);
   }
 
   event BallotProposalCreatedEvent(address ballot, string name);
 
-
+  // only the ballot contract code may initiate a vote for the proposal
   function vote(address voter) external onlyBallotCallable {
-
-    // only the ballot contract code may initiate a vote for the proposal
     assert (votesMap[voter] == address(0));
-
     votesMap[voter] = msg.sender;
     votes.append(voter);
-
     VoteEvent(voter);
   }
 
@@ -57,26 +55,24 @@ contract BallotProposal {
     uint256 _votedTokens,
     uint256 _allVotedtokens
   ) external onlyBallotCallable onlyIfNotFinalized {
-
     finalized = true;
-
     finalVoters = _voters;
     finalVotedTokens = _votedTokens;
     finalAllVotedTokens = _allVotedtokens;
 
     FinalResultsEvent(_voters, _votedTokens, _allVotedtokens);
   }
+
   event FinalResultsEvent(uint256 voters, uint256 votedTokens, uint256 votingTokenAll);
 
   event VoteEvent(address voter);
 
+  // only the ballot contract code may initiate a vote for the proposal
   function undoVote(address voter) external onlyBallotCallable {
 
-    // only the ballot contract code may initiate a vote for the proposal
     assert (votesMap[voter] != address(0));
 
     votesMap[voter] = address(0);
-
     var item = votes.find(voter);
     if (votes.iterate_valid(item))  {
       votes.remove(item);
@@ -87,7 +83,7 @@ contract BallotProposal {
 
   event UndoVoteEvent(address vorter);
 
-  // voters iteration
+  // voters iteration methods
 
   function votersCount() external constant returns (uint80) {
     return votes.itemsCount();
