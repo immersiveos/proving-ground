@@ -32,12 +32,25 @@ class BlockchainViewer extends React.Component<IProps, IState> {
     this.state = initialState;
   }
 
+  private static renderLoadingBlockchain() {
+    return (
+      <Panel className={s.chainPanel} header="Blockchain">
+        <ListGroup fill>
+          <ListGroupItem>
+            <FontAwesome name='user-circle-o' className={s.rm10}/>Please wait loading blockchain...
+          </ListGroupItem>
+        </ListGroup>
+      </Panel>
+    );
+  }
+
   public render() {
-    log('Rendering blockchain...');
 
-    const state= this.props.blockchaninState;
+    log('Rendering Blockchain viewer...');
 
-    if (!state) return <div/>;
+    const state = this.props.blockchaninState;
+
+    if (!state) return BlockchainViewer.renderLoadingBlockchain();
 
     const lastBlock = state.lastBlock;
     const lastError = state.error;

@@ -1,6 +1,5 @@
 import * as React from 'react';
 import BigNumber from 'bignumber.js';
-import {Blockchain} from '../../blockchain/blockchain';
 const { connect } = require('react-redux');
 const FontAwesome = require('react-fontawesome');
 const s = require('./style.css');
@@ -9,14 +8,8 @@ import * as $ from 'jquery';
 
 import {Glyphicon, Form, FormGroup, Col, FormControl, ListGroup, ListGroupItem, Panel, Popover, Tooltip, OverlayTrigger, Modal, Button, ButtonGroup, DropdownButton, MenuItem } from 'react-bootstrap';
 
-import {Selectors} from 'redux/selectors';
-import {BlockchainError, BlockInfo} from '../../blockchain/blockinfo';
-import TimeAgo from 'react-timeago';
-import {TxContext, TxState} from '../../blockchain/txcontext';
-import {BlockchainUtils} from '../../blockchain/utils';
-
 import {BallotsRegistryInfo} from '../../blockchain/ballotsregistry';
-import {BlockchainViewer} from '../../components/Blockchain/index';
+import {BlockchainViewer} from '../../components/BlockchainViewer/index';
 import {IBlockchainState} from '../../redux/reducers/blockchain/index';
 
 interface IProps {
@@ -57,7 +50,7 @@ class Home extends React.Component<IProps, IState> {
 
     return (
       <div>
-        { loading ? this.renderBallotsLoading() : null }
+        { loading ? Home.renderBallotsLoading() : null }
         { error ? this.renderBallotsError() : null }
         { !loading && !error && ballotsRegistry != null ? this.renderRegistry() : null}
 
@@ -67,7 +60,7 @@ class Home extends React.Component<IProps, IState> {
     );
   }
 
-  private renderBallotsLoading() {
+  private static renderBallotsLoading() {
     return (
       <div><Panel className={s.chainPanel} header="Ballots">
         <ListGroup fill>
