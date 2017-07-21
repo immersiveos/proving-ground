@@ -9,27 +9,12 @@ import {TimeUtils} from 'blockchain/utils';
 import {ImmersiveTokenActions} from '../redux/models/token';
 import {BallotProposalInfo, BallotProposal} from './ballotproposal';
 import {start} from 'repl';
+import {Token} from './token';
 
 const appConfig = require('../../../config/main');
 const contracts = require('truffle-contract');
 
 const log = console.log;
-
-export class TokenInfo {
-
-}
-
-export class Token {
-
-}
-
-export class BallotRegistryInfo {
-
-}
-
-export class BallotRegistry {
-
-}
 
 
 export class TokenBallotInfo {
@@ -47,8 +32,10 @@ export class TokenBallotInfo {
 
   public readonly proposals = Array<BallotProposalInfo>();
 
+  public totalVotes: number;
+
   constructor(_address:string, _name:string ,_owner:string,_infoUrl:string,
-               _tokenAddress:string,_delegate:string,_startBlock:number,_endBlock:number) {
+               _tokenAddress:string,_delegate:string,_startBlock:number,_endBlock:number, _totalVotes:number) {
     this.address = _address;
     this.name = _name;
     this.owner = _owner;
@@ -57,6 +44,7 @@ export class TokenBallotInfo {
     this.delegate = _delegate;
     this.startBlock = _startBlock;
     this.endBlock = _endBlock;
+    this.totalVotes = _totalVotes;
   }
 
 }
@@ -74,10 +62,13 @@ export class TokenBallot {
   private infoUrl: string;
 
   private tokenAddress: string;
+  private token:Token;
+
   private delegate: string;
 
   private proposals = Array<BallotProposal>();
 
+  private totalVotes: number;
   private finalized: boolean;
 
   private info:TokenBallotInfo;
@@ -115,6 +106,10 @@ export class TokenBallot {
     this.endBlock = await this.contract.endBlock();
     this.delegate = await this.contract.finalizationDelegate();
 
+    this.totalVotes = this.contract.totalVotes();
+
+    this.tokenAddress = await this.contract.token();
+    this.token = await Token.InitToken(this.tokenAddress);
 
     this.info = new TokenBallotInfo(
       this.address,
@@ -124,7 +119,9 @@ export class TokenBallot {
       this.infoUrl,
       this.delegate,
       this.startBlock,
-      this.endBlock);
+      this.endBlock,
+      this.totalVotes
+    );
 
     // todo: add the info to redux here
 
@@ -142,6 +139,20 @@ export class TokenBallot {
     this.contract.BallotFinalizedEvent().watch((error, result) => {
       this.updateFinalResults();
     });
+
+    this.contract.VoteEvent().watch((error, result) => {
+      this.updateTotalVotes();
+    });
+
+    this.contract.UnVoteEvent().watch((error, result) => {
+      this.updateTotalVotes();
+    });
+  }
+
+  private async updateTotalVotes() {
+    this.totalVotes = this.contract.totalVotes();
+
+    //todo: fire redux event
   }
 
   private async updateFinalResults() {

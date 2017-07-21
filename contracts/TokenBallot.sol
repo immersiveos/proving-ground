@@ -25,6 +25,8 @@ contract TokenBallot is Ownable {
   uint8 public finalizedProposalsCount;
   bool public votesFinalized;
 
+  unit256 public votesCount;
+
   modifier onlyIfAcceptingVotes() {
     assert(block.number >= startBlock);
     assert(block.number <= endBlock);
@@ -109,6 +111,8 @@ contract TokenBallot is Ownable {
      var proposal = proposalsMap[_proposal];
      proposal.vote(msg.sender);
 
+     votesCount += 1;
+
      VoteEvent(proposal, msg.sender);
   }
 
@@ -122,6 +126,8 @@ contract TokenBallot is Ownable {
 
     var proposal = proposalsMap[_proposal];
     proposal.undoVote(msg.sender);
+
+    votesCount -= 1;
 
     UndoVoteEvent(proposal, msg.sender);
   }

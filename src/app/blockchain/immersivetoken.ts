@@ -12,7 +12,7 @@ const contracts = require('truffle-contract');
 
 const log = console.log;
 
-export class TokenInfo {
+export class ImmersiveTokenInfo {
 
   // immutable contract state
   public readonly address: string;
@@ -86,7 +86,7 @@ export class ImmersiveToken {
     const name = await this.contract.name();
     const balance = await this.contract.totalSupply();
 
-    const tokenInfo = new TokenInfo(this.address, name, owner, fundingGaol, fundingStartBlock, fundingEndBlock, balance, symbol, funded);
+    const tokenInfo = new ImmersiveTokenInfo(this.address, name, owner, fundingGaol, fundingStartBlock, fundingEndBlock, balance, symbol, funded);
 
     // basic validation
     if (appConfig.tokenSymbol != symbol) throw new Error('Invalid token');
