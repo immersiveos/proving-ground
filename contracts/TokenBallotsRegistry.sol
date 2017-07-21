@@ -7,31 +7,28 @@ import "./TokenBallot.sol";
 
 contract TokenBallotsRegistry {
 
-  mapping (address => TokenBallot) public ballotsMap;
+  // ballots store - index is ballot id
   TokenBallot[] public ballotsArray;
 
-  uint256 public id;
-
+  // key: ballot id, value: ballot address
   mapping (uint256 => address) public ids;
 
   function addBallot(TokenBallot _ballot) external {
 
     assert (ballotsMap[_ballot] == address(0));
 
-    ballotsMap[_ballot] = _ballot;
+    var l = ballotsArray.length;
+
     ballotsArray.push(_ballot);
-    ids[id] = _ballot;
+    ids[l] = _ballot;
 
     BallotRegisteredEvent(_ballot.token(), id, _ballot);
-
-    id = id + 1;
-
   }
 
-  event BallotRegisteredEvent(address indexed token, uint256 indexed id, address ballot);
+  event BallotRegisteredEvent(address indexed token, uint256 id, address ballot);
 
   // array iteration helper
-  function numberOfBallots() external constant returns (uint256) {
+  function ballotsCount() external constant returns (uint256) {
     return ballotsArray.length;
   }
 }

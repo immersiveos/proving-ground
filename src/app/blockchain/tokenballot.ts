@@ -52,7 +52,8 @@ export class TokenBallotInfo {
 export class TokenBallot {
 
   private readonly contract;
-  private readonly address: string;
+  public readonly address: string;
+  public readonly id: number;
 
   private startBlock: number;
   private endBlock: number;
@@ -71,12 +72,12 @@ export class TokenBallot {
   private totalVotes: number;
   private finalized: boolean;
 
-  private info:TokenBallotInfo;
+  public info:TokenBallotInfo;
 
-  public static async Init(address:string): Promise<TokenBallot> {
+  public static async Init(address:string, id:number): Promise<TokenBallot> {
 
     log(`Initializing  token....`);
-    const instance = new TokenBallot(address);
+    const instance = new TokenBallot(address, id);
 
     try {
       await instance.init();
@@ -89,10 +90,11 @@ export class TokenBallot {
     }
   }
 
-  private constructor(address) {
+  private constructor(address, id) {
     const data = contracts(TokenBallotContractData);
     data.setProvider(Blockchain.sharedInstance.web3.currentProvider);
     this.address = address;
+    this.id = id;
     this.contract = data.at(address);
   }
 

@@ -18,7 +18,8 @@ export class BallotProposalInfo {
 
   public readonly currentVoters: number;
 
-  constructor(_name:string,
+  constructor(_address:string,
+              _name:string,
               _infoUrl:string,
               _ballotAddress:string,
               _finalized:boolean,
@@ -28,6 +29,7 @@ export class BallotProposalInfo {
               ) {
 
     this.name = _name;
+    this.address = _address;
     this.infoUrl = _infoUrl;
     this.ballotAddress = _ballotAddress;
     this.finalized = _finalized;
@@ -90,6 +92,7 @@ export class BallotProposal {
     const store = (global as any).store;
 
     this.info = new BallotProposalInfo(
+        this.address,
         this.name,
         this.infoUrl,
         this.ballotAddress,
