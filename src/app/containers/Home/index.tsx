@@ -35,7 +35,6 @@ const initialState:IState = {
   }),
 )
 class Home extends React.Component<IProps, IState> {
-
   constructor(props) {
     super(props);
     this.state = initialState;
