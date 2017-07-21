@@ -14,17 +14,15 @@ import {BlockchainError, BlockInfo} from '../../blockchain/blockinfo';
 import TimeAgo from 'react-timeago';
 import {TxContext, TxState} from '../../blockchain/txcontext';
 import {BlockchainUtils} from '../../blockchain/utils';
-import {ImmersiveTokenInfo} from '../../blockchain/immersivetoken';
+
+import {BallotsRegistryInfo} from '../../blockchain/ballotsregistry';
+import {BlockchainViewer} from '../../components/Blockchain/index';
+import {IBlockchainState} from '../../redux/reducers/blockchain/index';
 
 interface IProps {
-  userAccount: string;
-  networkId: number;
-  lastBlock?: BlockInfo;
-  connected: boolean;
-  lastError?: BlockchainError;
-  updated?: Date;
-  token?: ImmersiveTokenInfo;
-  tokenError? : string;
+  blockchainState?: IBlockchainState;
+  ballotsRegistry?: BallotsRegistryInfo;
+  ballotsError? : string;
 }
 
 interface IState {
@@ -35,14 +33,9 @@ const initialState:IState = {
 
 @connect(
   (state) => ({
-    userAccount: state.blockchain.userAccount,
-    networkId: state.blockchain.networkId,
-    lastBlock: state.blockchain.lastBlock,
-    connected: state.blockchain.connected,
-    lastError: state.blockchain.lastError,
-    updated: state.blockchain.updated,
-    token: state.immersive.token,
-    tokenError: state.immersive.error
+    blockchainState: state.blockchain,
+    ballotsRegistry: state.ballotsRegistry.registry,
+    ballotsError: state.ballotsRegistry.error
   }),
   (dispatch) => ({
 
@@ -58,59 +51,53 @@ class Home extends React.Component<IProps, IState> {
   public render() {
 
     log('Rendering home...');
-    const {token, tokenError} = this.props;
-    const loading = token == null;
-    const error = tokenError != null;
+    const {ballotsRegistry, ballotsError} = this.props;
+    const loading = ballotsRegistry == null;
+    const error = ballotsError != null;
 
     return (
       <div>
-        { loading ? this.renderTokenLoading() : null }
-        { error ? this.renderTokenError() : null }
-        { !loading && !error && token != null ? this.renderTokenInfo() : null}
-        { this.renderBlockchainInfo() }
+        { loading ? this.renderBallotsLoading() : null }
+        { error ? this.renderBallotsError() : null }
+        { !loading && !error && ballotsRegistry != null ? this.renderRegistry() : null}
+
+        <BlockchainViewer blockchaninState={this.props.blockchainState} />
+
       </div>
     );
   }
 
-  private renderTokenLoading() {
+  private renderBallotsLoading() {
     return (
-      <div><Panel className={s.chainPanel} header="Crowdsale Info">
+      <div><Panel className={s.chainPanel} header="Ballots">
         <ListGroup fill>
           <ListGroupItem>Loading...</ListGroupItem>
         </ListGroup>
       </Panel></div>);
   }
 
-  private renderTokenError() {
+  private renderBallotsError() {
     return (
       <div>
-        <Panel className={s.chainPanel} header="Crowdsale Info">
+        <Panel className={s.chainPanel} header="Ballots">
           <ListGroup fill>
-            <ListGroupItem>Error loaded token. ${this.props.tokenError}</ListGroupItem>
+            <ListGroupItem>Error loaded ballots. ${this.props.ballotsError}</ListGroupItem>
           </ListGroup>
         </Panel></div>);
   }
 
-  private renderTokenInfo() {
+  private renderRegistry() {
 
-    const {token, tokenError} = this.props;
+    const {ballotsRegistry, ballotsError} = this.props;
 
-    const blockchain = Blockchain.sharedInstance;
-    const startedDate = blockchain.estimatedBlockDate(token.fundingStartBlock);
-    const endDate = blockchain.estimatedBlockDate(token.fundingEndBlock);
-    const balance = blockchain.getEthAmountString(token.balance);
-    const fundingGaol = blockchain.getEthAmountString(token.fundingGoal);
+    //const now = new Date();
+    //const ended = endDate.getTime() < now.getTime();
+    //const endedDisp = ended ? "Endeed" : "Ends on";
 
-    const successful = token.funded != null && token.funded == true;
-    const failed = token.funded != null && token.funded == false;
+    //const contractUrl = `https://etherscan.io/address/${token.address}`;
 
-    const now = new Date();
-    const ended = endDate.getTime() < now.getTime();
-    const endedDisp = ended ? "Endeed" : "Ends on";
-
-    const contractUrl = `https://etherscan.io/address/${token.address}`;
-
-    return (
+    return (<div/>);
+    /*
       <div>
         <Panel className={s.chainPanel} header="ImmersiveToken Token Sale">
           <ListGroup fill>
@@ -138,71 +125,7 @@ class Home extends React.Component<IProps, IState> {
           </ListGroup>
         </Panel>
       </div>
-    );
-  }
-
-  private renderBlockchainInfo() {
-
-    const {lastBlock, lastError, updated, userAccount} = this.props;
-
-    const status = this.props.connected ? "online" : "offline";
-
-    const localUser = userAccount != null && userAccount.length > 0;
-
-    return (
-      <div>
-        <Panel className={s.chainPanel} header="Blockchain">
-          <ListGroup fill>
-            {
-              updated != null ? <ListGroupItem>
-                <FontAwesome name='clock-o' className={s.rm10}/>
-                Updated <TimeAgo date={updated}/>
-              </ListGroupItem> :
-                <ListGroupItem>Loading...</ListGroupItem>
-            }
-
-            {
-              localUser ?
-                <ListGroupItem>
-                  <FontAwesome name='user-circle-o' className={s.rm10}/>
-
-                  Wallet account: <a href="#">{BlockchainUtils.shortAddressFormat(this.props.userAccount)}</a>
-                </ListGroupItem> :
-
-                <ListGroupItem>
-                  <FontAwesome name='info' className={s.rm10}/>
-                  Wallet user not found or user account locked
-                </ListGroupItem>
-
-            }
-
-            <ListGroupItem>
-              <FontAwesome name='server' className={s.rm10}/>
-              {BlockchainUtils.networkName(this.props.networkId)}
-            </ListGroupItem>
-
-            <ListGroupItem>
-              <FontAwesome name='plug' className={s.rm10}/>
-              Status: {status}
-            </ListGroupItem>
-
-            {
-              lastError != null ?
-                <ListGroupItem>
-                  <FontAwesome name='info' className={s.rm10}/>
-                  Last error: {lastError.description}</ListGroupItem>
-                : null
-            }
-            <ListGroupItem>
-              <FontAwesome name='cube' className={s.rm10}/>
-              Last block: {
-              lastBlock != null ?
-                <span>{lastBlock.blockNumber.toString()} Mined <TimeAgo date={lastBlock.date}/>, {lastBlock.date.toString()}</span> : 'no block'
-            }</ListGroupItem>
-          </ListGroup>
-        </Panel>
-      </div>
-    );
+    );*/
   }
 }
 

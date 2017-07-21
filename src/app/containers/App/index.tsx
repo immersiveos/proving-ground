@@ -4,7 +4,7 @@ import * as $ from 'jquery';
 import {Header} from 'components';
 import {Helmet} from 'react-helmet';
 import {Blockchain} from '../../blockchain/blockchain';
-import {ImmersiveToken} from '../../blockchain/immersivetoken';
+import {BallotsRegistry} from '../../blockchain/ballotsregistry';
 
 const style = require('./style.css');
 const log = console.log;
@@ -17,7 +17,7 @@ class App extends React.Component<void, void> {
     $(window).on('load', () => {
       log(`Window-loaded - init block-chain....`);
       Blockchain.InitBlockchain().then(() => {
-        ImmersiveToken.InitToken();
+        BallotsRegistry.InitBallotsRegistry(appConfig.ballotsRegistryAddress);
       });
     });
   }

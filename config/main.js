@@ -6,15 +6,13 @@ const config = {
   port: process.env.PORT || 8889,
   karmaPort: 9876,
 
-  // token contract address
-  tokenAddress: '0xaEf034Fe7a5ECB37F8C362735CECAED4b0dD1F63',
-  tokenSymbol: 'IMM',
+  ballotsRegistryAddress: '0xe3c5ac0a2d068bd2353119f959e284e3839e9e4a',
 
   // This part goes to React-Helmet for Head of our HTML
   app: {
     head: {
-      title: 'TokenVote Dapp',
-      titleTemplate: 'TokenVote - %s',
+      title: 'The Proving Ground',
+      titleTemplate: 'The Proving Ground - %s',
       meta: [
         { charset: 'utf-8' },
         { 'http-equiv': 'x-ua-compatible', content: 'ie=edge' },

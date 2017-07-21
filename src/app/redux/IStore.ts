@@ -1,7 +1,7 @@
 import {IBlockchainState} from './reducers/blockchain/index';
-import {IImmersiveState} from './reducers/immersive/index';
+import {IBallotsRegistryState} from './reducers/ballotsregistry/index';
 
 export interface IStore {
   blockchain: IBlockchainState;
-  immersive: IImmersiveState;
+  ballotsRegistry: IBallotsRegistryState;
 }
