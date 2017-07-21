@@ -44,6 +44,7 @@ contract('Ballots', function(accounts) {
     await Utils.execLogTx(ballot.addProposal(proposal2.address));
     await Utils.execLogTx(ballot.addProposal(proposal3.address));
 
+    // add the ballot to the registry
     await Utils.execLogTx(registry.addBallot(ballot.address));
 
     await token.fund({value: web3.toWei(new BigNumber(0.1), "ether"), from: accounts[1]});
