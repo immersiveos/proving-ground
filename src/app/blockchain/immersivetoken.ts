@@ -123,7 +123,6 @@ export class ImmersiveToken {
     if (tokenInfo.fundingInProgress != inProgress) {
       store.dispatch(ImmersiveTokenActions.setFundingInProgress(inProgress));
     }
-
   }
 }
 

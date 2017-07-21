@@ -25,7 +25,7 @@ contract TokenBallot is Ownable {
   uint8 public finalizedProposalsCount;
   bool public votesFinalized;
 
-  unit256 public votesCount;
+  uint256 public votesCount;
 
   modifier onlyIfAcceptingVotes() {
     assert(block.number >= startBlock);
@@ -56,7 +56,7 @@ contract TokenBallot is Ownable {
     BallotCreatedEvent(token, name, startBlock, endBlock, infoUrl);
   }
 
-  event BallotCreatedEvent(address indexed token, string name, uint256 startBlock, uint256 endBlock);
+  event BallotCreatedEvent(address indexed token, string name, uint256 startBlock, uint256 endBlock, string infoUrl);
 
   function addProposal(BallotProposal _proposal) external onlyOwner onlyBeforeVotingStarts {
     proposalsMap[address(_proposal)] = _proposal;

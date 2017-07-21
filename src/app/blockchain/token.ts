@@ -1,11 +1,9 @@
 import BigNumber from 'bignumber.js';
 import * as ContractData from '../../contracts/IERC20Token.json';
-
 import {Blockchain} from './blockchain';
 import {TxCallback, TxContext} from './txcontext';
 
 import {TimeUtils} from 'blockchain/utils';
-import {ImmersiveTokenActions} from '../redux/models/token';
 
 const contracts = require('truffle-contract');
 
@@ -40,7 +38,6 @@ export class Token {
   private symbol: string;
   private name: string;
   private totalSupply: BigNumber;
-
   private tokenInfo; TokenInfo;
 
   public static async InitToken(address): Promise<Token> {

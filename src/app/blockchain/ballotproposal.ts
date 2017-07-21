@@ -115,7 +115,6 @@ export class BallotProposal {
     this.contract.FinalResultsEvent().watch((error, result) => {
       this.processFinalResults();
     });
-
   }
 
   private async processFinalResults () {
@@ -129,7 +128,6 @@ export class BallotProposal {
 
   private async updateVotes () {
     this.currentVoters = await this.contract.votersCount();
-
     // todo: dispatch event to update the ballot proposal info here
   }
 

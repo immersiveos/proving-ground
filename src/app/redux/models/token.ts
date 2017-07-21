@@ -1,9 +1,9 @@
 import BigNumber from 'bignumber.js';
-import {TokenInfo} from '../../blockchain/immersivetoken';
+import {ImmersiveTokenInfo} from '../../blockchain/immersivetoken';
 
 export type SET_TOKEN = 'token/SET_TOKEN';
 export const SET_TOKEN: SET_TOKEN = 'token/SET_TOKEN';
-export type SetTokenAction = { type: SET_TOKEN, token:TokenInfo};
+export type SetTokenAction = { type: SET_TOKEN, token:ImmersiveTokenInfo};
 
 export type UPDATE_BALANCE = 'token/UPDATE_BALANCE';
 export const UPDATE_BALANCE: UPDATE_BALANCE = 'token/UPDATE_BALANCE';
@@ -24,7 +24,7 @@ export type SetErrorAction = { type: SET_ERROR, error:string};
 
 export class ImmersiveTokenActions {
 
-  public static setToken(token:TokenInfo):SetTokenAction {
+  public static setToken(token:ImmersiveTokenInfo):SetTokenAction {
     return <SetTokenAction>{ type: SET_TOKEN , token:token};
   }
 

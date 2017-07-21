@@ -31,7 +31,7 @@ contract('Ballots', function(accounts) {
     const ballotStart =  web3.eth.blockNumber + 20;
     const ballotEnd =  ballotStart + 10;
 
-    const ballot = await TokenBallot.new("Test Ballot", token.address, ballotStart, ballotEnd, accounts[2]);
+    const ballot = await TokenBallot.new("Test Ballot", token.address, ballotStart, ballotEnd, accounts[2], "http://foo.bar");
 
     const ballotName = await ballot.name.call();
     log(`Ballot address: ${ballot.address}, name: ${ballotName}`);
@@ -71,7 +71,7 @@ contract('Ballots', function(accounts) {
 
     await Utils.mineToBlock(new BigNumber(ballotEnd));
 
-    const proposalsCount = await ballot.numberOfProposals.call();
+    const proposalsCount = await ballot.proposalsCount.call();
 
     // key - proposal address, value - voters map [voter => balance]
     const proposalVotersMap = new Map ();

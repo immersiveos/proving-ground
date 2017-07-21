@@ -1,4 +1,4 @@
-import {ImmersiveToken, TokenInfo} from '../../../blockchain/immersivetoken';
+import {ImmersiveToken, ImmersiveTokenInfo} from '../../../blockchain/immersivetoken';
 import {ObjectMap} from '../../models/utils';
 import {
   IImersiveActions, SET_ERROR, SET_FUNDED, SET_FUNDING_IN_PROGRESS, SET_TOKEN,
@@ -6,7 +6,7 @@ import {
 } from '../../models/token';
 
 export interface IImmersiveState {
-  token?:TokenInfo;
+  token?:ImmersiveTokenInfo;
   error?:string;
 }
 

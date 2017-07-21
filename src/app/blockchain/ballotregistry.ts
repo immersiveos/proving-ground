@@ -37,9 +37,9 @@ export class BallotRegistry {
   private ballotsCount: BigNumber;
   private ballots = new Map<string,TokenBallot>();
   private info: BallotRegistryInfo;
-  public static async InitProposal(address:string): Promise<BallotRegistry> {
+  public static async InitProposal(_address:string): Promise<BallotRegistry> {
 
-    const ballotRegistry = new BallotRegistry(address);
+    const ballotRegistry = new BallotRegistry(_address);
 
     try {
       await ballotRegistry.init();
@@ -52,10 +52,10 @@ export class BallotRegistry {
     }
   }
 
-  private constructor(address:string) {
+  private constructor(_address:string) {
     const data = contracts(TokenBallotRegistryData);
     data.setProvider(Blockchain.sharedInstance.web3.currentProvider);
-    this.address = address;
+    this.address = _address;
     this.contract = data.at(this.address);
   }
 
@@ -64,7 +64,6 @@ export class BallotRegistry {
 
     this.updateBallots();
 
-    const store = (global as any).store;
 
     this.info = new BallotRegistryInfo(this.address);
 
@@ -73,6 +72,8 @@ export class BallotRegistry {
         this.info.ballots[b.address] = b.info;
       }
     }
+
+    const store = (global as any).store;
 
     // todo: add registry info to store here
 
@@ -88,11 +89,11 @@ export class BallotRegistry {
 
     for (let i=0; i < this.ballotsCount.toNumber(); i++) {
 
-      const ballotAddress = await this.contract.ids(i);
-      const ballot = await TokenBallot.Init(ballotAddress, i);
+      const ballotAddress = await this.contract.ballots(i);
 
       if (!this.ballots.has(ballotAddress)) {
-        this.ballots[ballotAddress] = ballot;
+        this.ballots[ballotAddress] = await TokenBallot.Init(ballotAddress, i);;
+
         // todo: update redux state
       }
     }

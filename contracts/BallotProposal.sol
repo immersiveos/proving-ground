@@ -40,7 +40,7 @@ contract BallotProposal {
     BallotProposalCreatedEvent(_ballot, _name, _infoUrl);
   }
 
-  event BallotProposalCreatedEvent(address ballot, string name);
+  event BallotProposalCreatedEvent(address ballot, string name, string infoUrl);
 
   // only the ballot contract code may initiate a vote for the proposal
   function vote(address voter) external onlyBallotCallable {

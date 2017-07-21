@@ -14,7 +14,7 @@ import {BlockchainError, BlockInfo} from '../../blockchain/blockinfo';
 import TimeAgo from 'react-timeago';
 import {TxContext, TxState} from '../../blockchain/txcontext';
 import {BlockchainUtils} from '../../blockchain/utils';
-import {TokenInfo} from '../../blockchain/immersivetoken';
+import {ImmersiveTokenInfo} from '../../blockchain/immersivetoken';
 
 interface IProps {
   userAccount: string;
@@ -23,7 +23,7 @@ interface IProps {
   connected: boolean;
   lastError?: BlockchainError;
   updated?: Date;
-  token?: TokenInfo;
+  token?: ImmersiveTokenInfo;
   tokenError? : string;
 }
 
