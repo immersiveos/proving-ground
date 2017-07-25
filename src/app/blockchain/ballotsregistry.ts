@@ -2,6 +2,7 @@ import BigNumber from 'bignumber.js';
 import * as TokenBallotRegistryData from '../../contracts/TokenBallotsRegistry.json';
 import {Blockchain} from './blockchain';
 import {TokenBallot, TokenBallotInfo} from './tokenballot';
+import {TxCallback, TxContext} from './txcontext';
 
 const contracts = require('truffle-contract');
 
@@ -61,6 +62,10 @@ export class BallotsRegistry {
     data.setProvider(Blockchain.sharedInstance.web3.currentProvider);
     this.address = _address;
     this.contract = data.at(this.address);
+
+    // store a reference to this contract abstraction on the chain model
+    const blockChain = Blockchain.sharedInstance;
+    blockChain.contractsAbstractions[this.address] = this;
   }
 
   // async init
@@ -78,7 +83,14 @@ export class BallotsRegistry {
     this.contract.BallotRegisteredEvent().watch((error, result) => {
       this.updateBallots();
     });
+  }
 
+  // register a new ballot
+  public async registerNewBallot(ballotAddress, requestedConfirms:number, callback:TxCallback) {
+    const blockChain = Blockchain.sharedInstance;
+    const tx =  this.contract.addBallot(ballotAddress);
+    const txContext = new TxContext(tx, requestedConfirms, callback);
+    blockChain.processTransaction(txContext);
   }
 
   private async updateBallots() {

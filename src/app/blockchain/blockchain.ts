@@ -14,6 +14,9 @@ export class Blockchain {
     await (global as any).store.dispatch(BlockchainActions.setBlockchain(Blockchain.sharedInstance));
   }
 
+  // a map holding object models for smart contracts indexed by the chain contract address
+  public contractsAbstractions = new Map<string, any> ();
+
   public static sharedInstance;
 
   private web3;
@@ -207,7 +210,7 @@ export class Blockchain {
     return new Date (this.lastBlock.date.getTime() + msecs);
   }
 
-  public estimatedBigNumberBlockDate(blockNumber:BigNumber):Date {
+  public estimatedBigNumberDateForBlock(blockNumber:BigNumber):Date {
     if (this.lastBlock == null) {
       log(`Warning: no last block yet`);
       return null;
@@ -217,6 +220,14 @@ export class Blockchain {
     return new Date (this.lastBlock.date.getTime() + msecs);
   }
 
+  public estimateBlockNumberForDate(date:Date):number {
+    if (!this.lastBlock) {
+      log(`Warning: no last block yet`);
+      return null;
+    }
+
+    return this.lastBlock.estimateBlockNumberFor(date);
+  }
 
   // Transactions tracking
   // due to lack of common support for eth_newPendingTransactionFilter and the alpha status of

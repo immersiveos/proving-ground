@@ -3,12 +3,13 @@ import BigNumber from 'bignumber.js';
 import * as TokenBallotContractData from '../../contracts/TokenBallot.json';
 
 import {Blockchain} from './blockchain';
-import {TxCallback, TxContext} from './txcontext';
+import {TxCallback, TxContext, TxState} from './txcontext';
 
 import {TimeUtils} from 'blockchain/utils';
 import {BallotProposalInfo, BallotProposal} from './ballotproposal';
 import {start} from 'repl';
 import {Token} from './token';
+import {NewBallotData} from './ballotfactory';
 
 const appConfig = require('../../../config/main');
 const contracts = require('truffle-contract');
@@ -45,7 +46,6 @@ export class TokenBallotInfo {
     this.endBlock = _endBlock;
     this.totalVotes = _totalVotes;
   }
-
 }
 
 export class TokenBallot {
@@ -75,7 +75,7 @@ export class TokenBallot {
 
   public static async Init(address:string, id:number): Promise<TokenBallot> {
 
-    log(`Initializing  token....`);
+    log(`Initializing  token ballot....`);
     const instance = new TokenBallot(address, id);
 
     try {
@@ -89,12 +89,85 @@ export class TokenBallot {
     }
   }
 
+  // create a new ballot from user provided data
+  public static async Create(data:NewBallotData):Promise<TokenBallot> {
+
+    try {
+      const contractData = contracts(TokenBallotContractData);
+      contractData.setProvider(Blockchain.sharedInstance.web3.currentProvider);
+
+      // todo: how can we wait for 5 confirms after this block?
+      // we need the transaction data for the contract creation
+
+      const ballotAddress = await contractData.new(
+        data.name,
+        data.tokenAddress,
+        data.startBlockNumber,
+        data.endBlockNumber,
+        data.delegateAddress,
+        data.infoUrl);
+
+      const tokenBallot = await TokenBallot.Init(ballotAddress, 0);
+
+      for (let p of data.proposals) {
+        const proposal = await BallotProposal.Create(p, ballotAddress);
+        await tokenBallot.addNewProposal(proposal);
+      }
+
+      // read the the newly added proposals from the blockchain
+      await tokenBallot.updateProposals();
+
+      return tokenBallot;
+
+    } catch (err) {
+      log(`Create error: ${err}`);
+    }
+  }
+
   private constructor(address, id) {
     const data = contracts(TokenBallotContractData);
     data.setProvider(Blockchain.sharedInstance.web3.currentProvider);
     this.address = address;
     this.id = id;
     this.contract = data.at(address);
+  }
+
+  private async addNewProposal(proposal:BallotProposal):Promise<boolean> {
+
+    return new Promise<boolean>((resolve, reject) => {
+
+      const blockChain = Blockchain.sharedInstance;
+      const tx = this.contract.addPropsal(proposal.address);
+
+      const txContext = new TxContext(tx, 6, (context: TxContext) => {
+        switch (context.state) {
+          case TxState.Mined:
+            log(`mined...`);
+            break;
+          case TxState.Error:
+            log(`error... ${context.error}`);
+            reject(context.error);
+            break;
+          case TxState.Pending:
+            log(`pending...`);
+            break;
+          case TxState.OutOfGas:
+            log(`out of gas...`);
+            reject('out of gas');
+            break;
+          case TxState.Confirmed:
+            log(`confirmed!`);
+            resolve(true);
+            break;
+          default:
+            log(`Unexpected state`);
+            break;
+        }
+      });
+
+      blockChain.processTransaction(txContext);
+
+    });
   }
 
   // async init

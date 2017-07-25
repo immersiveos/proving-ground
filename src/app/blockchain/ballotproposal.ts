@@ -1,6 +1,7 @@
 import BigNumber from 'bignumber.js';
 import * as BallotProposalContractData from '../../contracts/BallotProposal.json';
 import {Blockchain} from './blockchain';
+import {NewBallotProposalData} from './ballotfactory';
 
 const contracts = require('truffle-contract');
 const log = console.log;
@@ -41,7 +42,7 @@ export class BallotProposalInfo {
 
 export class BallotProposal {
   private readonly contract;
-  private readonly address;
+  public readonly address;
 
   private name: string;
   private infoUrl: string;
@@ -66,6 +67,26 @@ export class BallotProposal {
       //(global as any).store.dispatch(ImmersiveTokenActions.setError(error));
       debugger;
       return null;
+    }
+  }
+
+  // create a new ballot from user provided data
+  public static async Create(data:NewBallotProposalData, ballotAddress:string):Promise<BallotProposal> {
+
+    try {
+      const contractData = contracts(BallotProposalContractData);
+      contractData.setProvider(Blockchain.sharedInstance.web3.currentProvider);
+
+      // todo: how do we wait until 5 confirmations or so?
+      const proposalAddress = await contractData.new(
+        data.name,
+        ballotAddress,
+        data.infoUrl);
+
+      return BallotProposal.InitProposal(proposalAddress);
+
+    } catch (err) {
+      log(`Create proposla error: ${err}`);
     }
   }
 
