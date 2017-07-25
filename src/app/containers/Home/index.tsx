@@ -1,16 +1,16 @@
 import * as React from 'react';
 import BigNumber from 'bignumber.js';
+import * as $ from 'jquery';
+import {Glyphicon, Form, FormGroup, Col, FormControl, ListGroup, ListGroupItem, Panel, Popover, Tooltip, OverlayTrigger, Modal, Button, ButtonGroup, DropdownButton, MenuItem } from 'react-bootstrap';
+import {BallotsRegistryInfo} from '../../blockchain/ballotsregistry';
+import {BlockchainViewer} from '../../components/BlockchainViewer/index';
+import {IBlockchainState} from '../../redux/reducers/blockchain/index';
+import {TokenBallotInfo} from '../../blockchain/tokenballot';
+
 const { connect } = require('react-redux');
 const FontAwesome = require('react-fontawesome');
 const s = require('./style.css');
 const log = console.log;
-import * as $ from 'jquery';
-
-import {Glyphicon, Form, FormGroup, Col, FormControl, ListGroup, ListGroupItem, Panel, Popover, Tooltip, OverlayTrigger, Modal, Button, ButtonGroup, DropdownButton, MenuItem } from 'react-bootstrap';
-
-import {BallotsRegistryInfo} from '../../blockchain/ballotsregistry';
-import {BlockchainViewer} from '../../components/BlockchainViewer/index';
-import {IBlockchainState} from '../../redux/reducers/blockchain/index';
 
 interface IProps {
   blockchainState?: IBlockchainState;
@@ -82,42 +82,17 @@ class Home extends React.Component<IProps, IState> {
 
     const {ballotsRegistry, ballotsError} = this.props;
 
-    //const now = new Date();
-    //const ended = endDate.getTime() < now.getTime();
-    //const endedDisp = ended ? "Endeed" : "Ends on";
-
-    //const contractUrl = `https://etherscan.io/address/${token.address}`;
-
-    return (<div/>);
-    /*
-      <div>
-        <Panel className={s.chainPanel} header="ImmersiveToken Token Sale">
+    return (<div>
+        <Panel className={s.chainPanel} header="Ballots">
           <ListGroup fill>
-
-            <ListGroupItem>Started: <TimeAgo date={startedDate}/>&nbsp;(Block {token.fundingStartBlock.toString()})</ListGroupItem>
-
-            <ListGroupItem>Funding goal: {fundingGaol}</ListGroupItem>
-
-            <ListGroupItem>Raised: {balance}</ListGroupItem>
-
-            <ListGroupItem>Address:&nbsp;
-              <a href={contractUrl} target="_blank">{BlockchainUtils.shortAddressFormat(token.address)}</a>
-            </ListGroupItem>
-
-            <ListGroupItem>{endedDisp} <TimeAgo date={endDate}/>&nbps;(Block {token.fundingEndBlock.toString()})</ListGroupItem>
-
-            { successful ?
-              <ListGroupItem>Successful! thanks for your support</ListGroupItem> : null
-            }
-
-            { failed ?
-              <ListGroupItem>Campaign was not successful :-( thanks for your support - you may withdraw your
-                contribution</ListGroupItem> : null
-            }
+            { ballotsRegistry.ballots.forEach((ballot) => this.renderBallot(ballot)) }
           </ListGroup>
         </Panel>
-      </div>
-    );*/
+      </div>);
+  }
+
+  private renderBallot(ballot:TokenBallotInfo) {
+    return (<div key={ballot.address}/>);
   }
 }
 

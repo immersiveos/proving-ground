@@ -13,11 +13,13 @@ const appConfig = require('../../../../config/main');
 class App extends React.Component<void, void> {
 
   componentDidMount () {
-    log(`Client-side-loaded - init block-chain....`);
+    log(`Clientside loaded.`);
     $(window).on('load', () => {
-      log(`Window-loaded - init block-chain....`);
+      log(`Window loaded. Init blockchain....`);
       Blockchain.InitBlockchain().then(() => {
         BallotsRegistry.InitBallotsRegistry(appConfig.ballotsRegistryAddress);
+      }).catch( (reason) => {
+        log(`Failed to load registry: ${reason}`);
       });
     });
   }

@@ -6,7 +6,6 @@ export interface IBallotsRegistryState {
   error?:string;
 }
 
-
 const initialState: IBallotsRegistryState = {
   registry:null,
   error:null

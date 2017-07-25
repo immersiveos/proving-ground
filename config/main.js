@@ -6,7 +6,11 @@ const config = {
   port: process.env.PORT || 8889,
   karmaPort: 9876,
 
-  ballotsRegistryAddress: '0xe3c5ac0a2d068bd2353119f959e284e3839e9e4a',
+  // hardcoded bpublic registry - deployed by truffle deploy
+  ballotsRegistryAddress: '0x12842e41527fb01afcb23f89a73aa4260b7eb2d5',
+
+  // sandard token used for testing
+  immersiveTokenAddress: '0x7004dd1e3f4ecdd4ea2c657f07b0ed04014aa067',
 
   // This part goes to React-Helmet for Head of our HTML
   app: {

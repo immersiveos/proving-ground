@@ -1,10 +1,7 @@
 import BigNumber from 'bignumber.js';
-
 import * as TokenBallotContractData from '../../contracts/TokenBallot.json';
-
 import {Blockchain} from './blockchain';
 import {TxCallback, TxContext, TxState} from './txcontext';
-
 import {TimeUtils} from 'blockchain/utils';
 import {BallotProposalInfo, BallotProposal} from './ballotproposal';
 import {start} from 'repl';
@@ -13,9 +10,7 @@ import {NewBallotData} from './ballotfactory';
 
 const appConfig = require('../../../config/main');
 const contracts = require('truffle-contract');
-
 const log = console.log;
-
 
 export class TokenBallotInfo {
 
@@ -91,7 +86,6 @@ export class TokenBallot {
 
   // create a new ballot from user provided data
   public static async Create(data:NewBallotData):Promise<TokenBallot> {
-
     try {
       const contractData = contracts(TokenBallotContractData);
       contractData.setProvider(Blockchain.sharedInstance.web3.currentProvider);
@@ -133,13 +127,10 @@ export class TokenBallot {
   }
 
   private async addNewProposal(proposal:BallotProposal):Promise<boolean> {
-
     return new Promise<boolean>((resolve, reject) => {
-
       const blockChain = Blockchain.sharedInstance;
       const tx = this.contract.addPropsal(proposal.address);
-
-      const txContext = new TxContext(tx, 6, (context: TxContext) => {
+      const txContext = new TxContext(tx, 3, (context: TxContext) => {
         switch (context.state) {
           case TxState.Mined:
             log(`mined...`);
@@ -166,7 +157,6 @@ export class TokenBallot {
       });
 
       blockChain.processTransaction(txContext);
-
     });
   }
 

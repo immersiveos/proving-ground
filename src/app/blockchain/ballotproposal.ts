@@ -86,7 +86,7 @@ export class BallotProposal {
       return BallotProposal.InitProposal(proposalAddress);
 
     } catch (err) {
-      log(`Create proposla error: ${err}`);
+      log(`Create proposal error: ${err}`);
     }
   }
 

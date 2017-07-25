@@ -22,7 +22,6 @@ export class NewBallotData {
   public endTime: Date;
   public proposals = Array<NewBallotProposalData>();
 
-
   public get startBlockNumber() : number {
     const blockChain = Blockchain.sharedInstance;
     return blockChain.estimateBlockNumberFor(this.startTime)
@@ -37,14 +36,10 @@ export class NewBallotData {
 export class BallotFactory {
 
   public static async createNewBallot (data: NewBallotData, registryAddress: string):Promise<boolean> {
-
     const ballot = await TokenBallot.Create(data);
-
     return new Promise<boolean>((resolve, reject) => {
-
       const blockChain = Blockchain.sharedInstance;
       const registry: BallotsRegistry = blockChain.contractsAbstractions[registryAddress] as BallotsRegistry;
-
       registry.registerNewBallot(ballot.address, 6, (context: TxContext) => {
         switch (context.state) {
           case TxState.Mined:

@@ -42,10 +42,9 @@ export class BallotsRegistry {
 
   private ballotsCount: BigNumber;
   private info: BallotsRegistryInfo;
+
   public static async InitBallotsRegistry(_address:string): Promise<BallotsRegistry> {
-
     const ballotRegistry = new BallotsRegistry(_address);
-
     try {
       await ballotRegistry.init();
       return ballotRegistry;
@@ -71,10 +70,10 @@ export class BallotsRegistry {
   // async init
   private async init() {
 
-    // add registryInfo to redux
     this.info = new BallotsRegistryInfo(this.address);
-
     const store = (global as any).store;
+
+    // add registryInfo to redux (singleton for now)
     await store.dispatch(BallotRegistryActions.setRegistry(this.info));
 
     // update registry ballots
@@ -93,14 +92,10 @@ export class BallotsRegistry {
     blockChain.processTransaction(txContext);
   }
 
-  private async updateBallots() {
-
+  public async updateBallots() {
     this.ballotsCount = await this.contract.ballotsCount();
-
     for (let i=0; i < this.ballotsCount.toNumber(); i++) {
-
       const ballotAddress = await this.contract.ballots(i);
-
       const store = (global as any).store;
       const newBallots = Array<TokenBallotInfo>();
 
@@ -108,11 +103,9 @@ export class BallotsRegistry {
         const ballot = await TokenBallot.Init(ballotAddress, i);
         newBallots.push(ballot.info);
       }
-
       if (newBallots.length > 0) {
         store.dispatch(BallotRegistryActions.addBallots(newBallots));
       }
     }
   }
-
 }
